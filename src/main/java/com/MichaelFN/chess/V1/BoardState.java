@@ -1,5 +1,7 @@
 package com.MichaelFN.chess.V1;
 
+import jdk.jshell.execution.Util;
+
 public class BoardState {
     private BoardInitializer boardInitializer;
     private Piece[][] position;
@@ -15,7 +17,40 @@ public class BoardState {
     }
 
     public String generateFenString() {
-        return "";
+        StringBuilder FEN = new StringBuilder();
+        for (int i = 0; i < 8; i++) {
+            int counter = 0;
+            for (int j = 0; j < 8; j++) {
+                Piece piece = position[i][j];
+                if (piece != null) {
+                    if (counter > 0) {
+                        FEN.append(counter);
+                        counter = 0;
+                    }
+                    String pieceString = Utils.pieceToStringMap.get(piece);
+                    FEN.append(pieceString);
+                } else {
+                    counter++;
+                }
+            }
+            if (counter > 0) {
+                FEN.append(counter);
+            }
+            if (i < 7) {
+                FEN.append("/");
+            }
+        }
+
+        FEN.append(playerToMove == Color.WHITE ? " w " : " b ");
+        if (castlingRights[0][0]) FEN.append("K");
+        if (castlingRights[0][1]) FEN.append("Q");
+        if (castlingRights[1][0]) FEN.append("k");
+        if (castlingRights[1][1]) FEN.append("q");
+        if (FEN.charAt(FEN.length() - 1) == ' ') FEN.append("-");
+        FEN.append(" ").append(enPassantSquare == null ? "-" : Utils.coordsToSquareString(enPassantSquare));
+        FEN.append(" ").append(halfmoveClock);
+        FEN.append(" ").append(fullmoveNumber);
+        return FEN.toString();
     }
 
     @Override
@@ -31,8 +66,13 @@ public class BoardState {
             }
             stringBuilder.append(8-i).append("\n");
         }
-        stringBuilder.append("+---+---+---+---+---+---+---+---+\n  a   b   c   d   e   f   g   h\n");
+        stringBuilder.append("+---+---+---+---+---+---+---+---+\n  a   b   c   d   e   f   g   h\n\n");
+        stringBuilder.append(generateFenString());
         return stringBuilder.toString();
+    }
+
+    public void parseFEN(String FEN) {
+        boardInitializer.initializeFromFen(FEN);
     }
 
     public Piece[][] getPosition() {
