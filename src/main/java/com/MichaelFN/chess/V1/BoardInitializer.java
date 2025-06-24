@@ -12,8 +12,13 @@ public class BoardInitializer {
             {"R", "N", "B", "Q", "K", "B", "N", "R"}
     };
     public static final String STARTING_POSITION_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+    private final BoardState boardState;
 
-    public static Piece[][] generateStartingPosition() {
+    public BoardInitializer(BoardState boardState) {
+        this.boardState = boardState;
+    }
+
+    public void initializeStartingPosition() {
         Piece[][] position = new Piece[8][8];
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
@@ -22,6 +27,15 @@ public class BoardInitializer {
                 position[i][j] = piece;
             }
         }
-        return position;
+        boardState.setPosition(position);
+        boardState.setPlayerToMove(Color.WHITE);
+        boardState.setCastlingRights(new boolean[][]{{true,true}, {true,true}});
+        boardState.setEnPassantSquare(null);
+        boardState.setHalfmoveClock(0);
+        boardState.setFullmoveNumber(0);
+    }
+
+    public void initializeFromFenString(String FEN) {
+        
     }
 }
