@@ -4,7 +4,7 @@ public class BoardState {
     private BoardInitializer boardInitializer;
     private Piece[][] position;
     private Color playerToMove;
-    private boolean[][] castlingRights;
+    private boolean[][] castlingRights; // [WHITE, BLACK][K-side, Q-side]
     private int[] enPassantSquare;
     private int halfmoveClock;
     private int fullmoveNumber;
@@ -12,6 +12,10 @@ public class BoardState {
     public BoardState() {
         this.boardInitializer = new BoardInitializer(this);
         boardInitializer.initializeStartingPosition();
+    }
+
+    public String generateFenString() {
+        return "";
     }
 
     @Override

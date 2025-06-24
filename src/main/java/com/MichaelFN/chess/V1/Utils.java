@@ -26,4 +26,20 @@ public class Utils {
         }
         pieceToStringMap.put(null, " ");
     }
+
+    public static int[] squareStringToCoords(String square) {
+        if (square.equals("-")) return null;
+        char fileChar = square.charAt(0);
+        char rankChar = square.charAt(1);
+        int file = fileChar - 'a';
+        int rank = 8 - Character.getNumericValue(rankChar);
+        return new int[]{rank, file};
+    }
+
+    public static String coordsToSquareString(int[] square) {
+        if (square == null || square.length != 2) return "-";
+        char file = (char) ('a' + square[1]);
+        int rank = 8 - square[0];
+        return "" + file + rank;
+    }
 }
