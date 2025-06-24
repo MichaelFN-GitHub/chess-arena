@@ -42,4 +42,8 @@ public class Utils {
         int rank = 8 - square[0];
         return "" + file + rank;
     }
+
+    public static String coordsToSquareString(int rank, int file) {
+        return "" + (char) ('a' + file) + (8 - rank);
+    }
 }

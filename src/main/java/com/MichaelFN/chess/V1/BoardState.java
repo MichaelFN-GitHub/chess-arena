@@ -1,12 +1,10 @@
 package com.MichaelFN.chess.V1;
 
-import jdk.jshell.execution.Util;
-
 public class BoardState {
     private BoardInitializer boardInitializer;
     private Piece[][] position;
     private Color playerToMove;
-    private boolean[][] castlingRights; // [WHITE, BLACK][K-side, Q-side]
+    private boolean[][] castlingRights;
     private int[] enPassantSquare;
     private int halfmoveClock;
     private int fullmoveNumber;
