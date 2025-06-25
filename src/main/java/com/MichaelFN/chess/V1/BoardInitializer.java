@@ -34,17 +34,17 @@ public class BoardInitializer {
         }
 
         Piece[][] position = new Piece[8][8];
-        for (int rank = 0; rank < 8; rank++) {
-            int file = 0;
-            for (int j = 0; j < fenRanks[rank].length(); j++) {
-                char c = fenRanks[rank].charAt(j);
+        for (int row = 0; row < 8; row++) {
+            int col = 0;
+            for (int j = 0; j < fenRanks[row].length(); j++) {
+                char c = fenRanks[row].charAt(j);
                 if (Character.isDigit(c)) {
-                    file += Character.getNumericValue(c);
+                    col += Character.getNumericValue(c);
                 } else {
                     String pieceString = String.valueOf(c);
                     Piece piece = Utils.stringToPieceMap.get(pieceString);
-                    position[rank][file] = piece;
-                    file++;
+                    position[row][col] = piece;
+                    col++;
                 }
             }
         }

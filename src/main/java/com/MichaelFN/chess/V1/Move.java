@@ -1,12 +1,10 @@
 package com.MichaelFN.chess.V1;
 
-import java.util.List;
-
 public class Move {
-    private int fromRank;
-    private int fromFile;
-    private int toRank;
-    private int toFile;
+    private int fromRow;
+    private int fromCol;
+    private int toRow;
+    private int toCol;
 
     private Piece movedPiece;
 
@@ -19,26 +17,26 @@ public class Move {
     private boolean isCastleQueenside;
     private boolean isDoublePawnPush;
 
-    public Move(int fromRank, int fromFile, int toRank, int toFile, Piece movedPiece) {
-        this.fromRank = fromRank;
-        this.fromFile = fromFile;
-        this.toRank = toRank;
-        this.toFile = toFile;
+    public Move(int fromRow, int fromCol, int toRow, int toCol, Piece movedPiece) {
+        this.fromRow = fromRow;
+        this.fromCol = fromCol;
+        this.toRow = toRow;
+        this.toCol = toCol;
         this.movedPiece = movedPiece;
     }
 
-    public static Move createQuietMove(int fromRank, int fromFile, int toRank, int toFile, Piece movedPiece) {
-        return new Move(fromRank, fromFile, toRank, toFile, movedPiece);
+    public static Move createQuietMove(int fromRow, int fromCol, int toRow, int toCol, Piece movedPiece) {
+        return new Move(fromRow, fromCol, toRow, toCol, movedPiece);
     }
 
-    public static Move createDoublePawnPush(int fromRank, int fromFile, int toRank, int toFile, Piece movedPiece) {
-        Move move = createQuietMove(fromRank, fromFile, toRank, toFile, movedPiece);
+    public static Move createDoublePawnPush(int fromRow, int fromCol, int toRow, int toCol, Piece movedPiece) {
+        Move move = createQuietMove(fromRow, fromCol, toRow, toCol, movedPiece);
         move.setDoublePawnPush(true);
         return move;
     }
 
-    public static Move createCapture(int fromRank, int fromFile, int toRank, int toFile, Piece movedPiece, Piece capturedPiece) {
-        Move move = createQuietMove(fromRank, fromFile, toRank, toFile, movedPiece);
+    public static Move createCapture(int fromRow, int fromCol, int toRow, int toCol, Piece movedPiece, Piece capturedPiece) {
+        Move move = createQuietMove(fromRow, fromCol, toRow, toCol, movedPiece);
         move.setCapture(true);
         move.setCapturedPiece(capturedPiece);
         return move;
@@ -46,7 +44,7 @@ public class Move {
 
     @Override
     public String toString() {
-        return movedPiece + ": " + Utils.coordsToSquareString(fromRank, fromFile) + " -> " + Utils.coordsToSquareString(toRank, toFile) +
+        return movedPiece + ": " + Utils.coordsToSquareString(fromRow, fromCol) + Utils.coordsToSquareString(toRow, toCol) +
                 (isCapture ? " (capture)" : "") +
                 (isPromotion ? " promote to " + promotionPiece : "") +
                 (isEnPassant ? " (en passant)" : "") +
@@ -54,20 +52,20 @@ public class Move {
                 (isCastleQueenside ? " (O-O-O)" : "");
     }
 
-    public int getFromRank() {
-        return fromRank;
+    public int getFromRow() {
+        return fromRow;
     }
 
-    public int getFromFile() {
-        return fromFile;
+    public int getFromCol() {
+        return fromCol;
     }
 
-    public int getToRank() {
-        return toRank;
+    public int getToRow() {
+        return toRow;
     }
 
-    public int getToFile() {
-        return toFile;
+    public int getToCol() {
+        return toCol;
     }
 
     public Piece getMovedPiece() {

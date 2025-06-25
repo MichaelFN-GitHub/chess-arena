@@ -43,7 +43,7 @@ public class Utils {
         return "" + file + rank;
     }
 
-    public static String coordsToSquareString(int rank, int file) {
-        return "" + (char) ('a' + file) + (8 - rank);
+    public static String coordsToSquareString(int row, int col) {
+        return "" + (char) ('a' + col) + (8 - row);
     }
 }
