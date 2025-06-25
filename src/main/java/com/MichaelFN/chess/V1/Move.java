@@ -1,5 +1,7 @@
 package com.MichaelFN.chess.V1;
 
+import java.util.List;
+
 public class Move {
     private int fromRank;
     private int fromFile;
@@ -7,9 +9,9 @@ public class Move {
     private int toFile;
 
     private Piece movedPiece;
-    private Piece capturedPiece;
 
     private boolean isCapture;
+    private Piece capturedPiece;
     private boolean isPromotion;
     private Piece promotionPiece;
     private boolean isEnPassant;
@@ -23,6 +25,23 @@ public class Move {
         this.toRank = toRank;
         this.toFile = toFile;
         this.movedPiece = movedPiece;
+    }
+
+    public static Move createQuietMove(int fromRank, int fromFile, int toRank, int toFile, Piece movedPiece) {
+        return new Move(fromRank, fromFile, toRank, toFile, movedPiece);
+    }
+
+    public static Move createDoublePawnPush(int fromRank, int fromFile, int toRank, int toFile, Piece movedPiece) {
+        Move move = createQuietMove(fromRank, fromFile, toRank, toFile, movedPiece);
+        move.setDoublePawnPush(true);
+        return move;
+    }
+
+    public static Move createCapture(int fromRank, int fromFile, int toRank, int toFile, Piece movedPiece, Piece capturedPiece) {
+        Move move = createQuietMove(fromRank, fromFile, toRank, toFile, movedPiece);
+        move.setCapture(true);
+        move.setCapturedPiece(capturedPiece);
+        return move;
     }
 
     @Override
