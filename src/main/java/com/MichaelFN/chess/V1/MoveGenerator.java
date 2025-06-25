@@ -10,6 +10,8 @@ public class MoveGenerator {
 
         Color playerToMove = boardState.getPlayerToMove();
         Piece[][] position = boardState.getPosition();
+        int[] enPassantSquare = boardState.getEnPassantSquare();
+        boolean[][] castlingRights = boardState.getCastlingRights();
 
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
@@ -18,8 +20,7 @@ public class MoveGenerator {
 
                 switch (piece.getType()) {
                     case PAWN:
-                        generatePawnMoves(moveList, piece, i, j, position);
-                        // TODO: En passant
+                        generatePawnMoves(moveList, piece, i, j, position, enPassantSquare);
                         break;
                     case KNIGHT:
                         generateKnightMoves(moveList, piece, i, j, position);
@@ -35,7 +36,7 @@ public class MoveGenerator {
                         break;
                     case KING:
                         generateKingMoves(moveList, piece, i, j, position);
-                        // TODO: Castling
+                        generateCastlingMoves(moveList, piece, i, j, position, castlingRights);
                         break;
                 }
             }
@@ -45,13 +46,11 @@ public class MoveGenerator {
     }
 
     private static void generateKingMoves(List<Move> moveList, Piece king, int row, int col, Piece[][] position) {
-        int[][] jumps = {{1,0}, {-1,0}, {0,1}, {0,-1}, {1,1}, {1,-1}, {-1,1}, {-1,-1}};
-        generateJumpMoves(moveList, king, row, col, position, jumps);
+        generateJumpMoves(moveList, king, row, col, position, Utils.KING_JUMPS);
     }
 
     private static void generateKnightMoves(List<Move> moveList, Piece knight, int row, int col, Piece[][] position) {
-        int[][] jumps = {{-2,-1}, {-2,1}, {-1,-2}, {-1,2}, {1,-2}, {1,2}, {2,-1}, {2,1}};
-        generateJumpMoves(moveList, knight, row, col, position, jumps);
+        generateJumpMoves(moveList, knight, row, col, position, Utils.KNIGHT_JUMPS);
     }
 
     private static void generateJumpMoves(List<Move> moveList, Piece piece, int row, int col, Piece[][] position, int[][] jumps) {
@@ -60,11 +59,11 @@ public class MoveGenerator {
             int toCol = col + jump[1];
             if (!Utils.inBounds(toRow, toCol)) continue;
 
-            Piece target = position[toRow][toCol];
-            if (target == null) {
+            Piece capturedPiece = position[toRow][toCol];
+            if (capturedPiece == null) {
                 moveList.add(Move.createQuietMove(row, col, toRow, toCol, piece));
-            } else if (target.getColor() != piece.getColor()) {
-                moveList.add(Move.createCapture(row, col, toRow, toCol, piece, target));
+            } else if (capturedPiece.getColor() != piece.getColor()) {
+                moveList.add(Move.createCapture(row, col, toRow, toCol, piece, capturedPiece));
             }
         }
     }
@@ -75,13 +74,11 @@ public class MoveGenerator {
     }
 
     private static void generateRookMoves(List<Move> moveList, Piece rook, int row, int col, Piece[][] position) {
-        int[][] directions = {{1,0}, {-1,0}, {0,1}, {0,-1}};
-        generateSlidingMoves(moveList, rook, row, col, position, directions);
+        generateSlidingMoves(moveList, rook, row, col, position, Utils.ROOK_DIRECTIONS);
     }
 
     private static void generateBishopMoves(List<Move> moveList, Piece bishop, int row, int col, Piece[][] position) {
-        int[][] directions = {{1,1}, {1,-1}, {-1,1}, {-1,-1}};
-        generateSlidingMoves(moveList, bishop, row, col, position, directions);
+        generateSlidingMoves(moveList, bishop, row, col, position, Utils.BISHOP_DIRECTIONS);
     }
 
     private static void generateSlidingMoves(List<Move> moveList, Piece piece, int row, int col, Piece[][] position, int[][] directions) {
@@ -104,7 +101,7 @@ public class MoveGenerator {
         }
     }
 
-    public static void generatePawnMoves(List<Move> moveList, Piece pawn, int row, int col, Piece[][] position) {
+    public static void generatePawnMoves(List<Move> moveList, Piece pawn, int row, int col, Piece[][] position, int[] enPassantSquare) {
         int forward = pawn.getColor() == Color.WHITE ? -1 : 1;
         boolean hasNotMoved = pawn.getColor() == Color.WHITE ? row == 6 : row == 1;
         int promotionRow = pawn.getColor() == Color.WHITE ? 0 : 7;
@@ -144,6 +141,11 @@ public class MoveGenerator {
                     moveList.add(Move.createCapture(row, col, toRow, toCol, pawn, capturedPiece));
                 }
             }
+
+            // En passant
+            if (toRow == enPassantSquare[0] && toCol == enPassantSquare[1]) {
+                moveList.add(Move.createEnPassantCapture(row, col, toRow, toCol, pawn));
+            }
         }
 
         // Capture to the left
@@ -159,6 +161,38 @@ public class MoveGenerator {
                     moveList.add(Move.createPromotionCapture(row, col, toRow, toCol, pawn, capturedPiece, PieceType.KNIGHT));
                 } else {
                     moveList.add(Move.createCapture(row, col, toRow, toCol, pawn, capturedPiece));
+                }
+            }
+
+            // En passant
+            if (toRow == enPassantSquare[0] && toCol == enPassantSquare[1]) {
+                moveList.add(Move.createEnPassantCapture(row, col, toRow, toCol, pawn));
+            }
+        }
+    }
+
+    private static void generateCastlingMoves(List<Move> moveList, Piece king, int row, int col, Piece[][] position, boolean[][] castlingRights) {
+        int colorIndex = (king.getColor() == Color.WHITE) ? 0 : 1;
+        Color opponentColor = (king.getColor() == Color.WHITE) ? Color.BLACK : Color.WHITE;
+
+        // Kingside castling
+        if (castlingRights[colorIndex][0]) {
+            if (position[row][5] == null && position[row][6] == null) {
+                if (!Utils.isSquareAttacked(row, 4, position, opponentColor) &&
+                        !Utils.isSquareAttacked(row, 5, position, opponentColor) &&
+                        !Utils.isSquareAttacked(row, 6, position, opponentColor)) {
+                    moveList.add(Move.createCastleKingSide(row, col, row, 6, king));
+                }
+            }
+        }
+
+        // Queenside castling
+        if (castlingRights[colorIndex][1]) {
+            if (position[row][1] == null && position[row][2] == null && position[row][3] == null) {
+                if (!Utils.isSquareAttacked(row, 4, position, opponentColor) &&
+                        !Utils.isSquareAttacked(row, 3, position, opponentColor) &&
+                        !Utils.isSquareAttacked(row, 2, position, opponentColor)) {
+                    moveList.add(Move.createCastleQueenSide(row, col, row, 2, king));
                 }
             }
         }

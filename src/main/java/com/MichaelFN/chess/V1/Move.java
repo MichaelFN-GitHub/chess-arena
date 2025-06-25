@@ -56,6 +56,21 @@ public class Move {
         return move;
     }
 
+    public static Move createEnPassantCapture(int fromRow, int fromCol, int toRow, int toCol, Piece movedPiece) {
+        Piece capturedPiece = new Piece(PieceType.PAWN, movedPiece.getColor() == Color.WHITE ? Color.BLACK : Color.WHITE);
+        Move move = createCapture(fromRow, fromCol, toRow, toCol, movedPiece, capturedPiece);
+        move.setEnPassant(true);
+        return move;
+    }
+
+    public static Move createCastleKingSide(int fromRow, int fromCol, int toRow, int toCol, Piece movedPiece) {
+        return null;
+    }
+
+    public static Move createCastleQueenSide(int fromRow, int fromCol, int toRow, int toCol, Piece movedPiece) {
+        return null;
+    }
+
     @Override
     public String toString() {
         return movedPiece + ": " + Utils.coordsToSquareString(fromRow, fromCol) + Utils.coordsToSquareString(toRow, toCol) +
