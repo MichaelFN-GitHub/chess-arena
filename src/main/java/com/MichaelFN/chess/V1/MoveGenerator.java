@@ -5,7 +5,7 @@ import java.util.List;
 
 public class MoveGenerator {
 
-    public static List<Move> generateMoves(BoardState boardState) {
+    public static List<Move> generatePseudoLegalMoves(BoardState boardState) {
         List<Move> moveList = new ArrayList<>();
 
         Color playerToMove = boardState.getPlayerToMove();
@@ -143,7 +143,7 @@ public class MoveGenerator {
             }
 
             // En passant
-            if (toRow == enPassantSquare[0] && toCol == enPassantSquare[1]) {
+            if (enPassantSquare != null && toRow == enPassantSquare[0] && toCol == enPassantSquare[1]) {
                 moveList.add(Move.createEnPassantCapture(row, col, toRow, toCol, pawn));
             }
         }
@@ -165,7 +165,7 @@ public class MoveGenerator {
             }
 
             // En passant
-            if (toRow == enPassantSquare[0] && toCol == enPassantSquare[1]) {
+            if (enPassantSquare != null && toRow == enPassantSquare[0] && toCol == enPassantSquare[1]) {
                 moveList.add(Move.createEnPassantCapture(row, col, toRow, toCol, pawn));
             }
         }

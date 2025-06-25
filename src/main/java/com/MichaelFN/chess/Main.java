@@ -12,7 +12,8 @@ public class Main {
         BoardState boardState = new BoardState();
         System.out.println(boardState);
 
-        List<Move> moveList = MoveGenerator.generateMoves(boardState);
+        List<Move> moveList = MoveGenerator.generatePseudoLegalMoves(boardState);
         moveList.forEach(System.out::println);
+        System.out.println("Total amount of moves: " + moveList.size());
     }
 }
