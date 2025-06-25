@@ -14,9 +14,7 @@ public class MoveGenerator {
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
                 Piece piece = position[i][j];
-                if (piece == null || piece.getColor() != playerToMove) {
-                    continue;
-                }
+                if (piece == null || piece.getColor() != playerToMove) continue;
 
                 switch (piece.getType()) {
                     case PAWN:
@@ -109,26 +107,42 @@ public class MoveGenerator {
     public static void generatePawnMoves(List<Move> moveList, Piece pawn, int row, int col, Piece[][] position) {
         int forward = pawn.getColor() == Color.WHITE ? -1 : 1;
         boolean hasNotMoved = pawn.getColor() == Color.WHITE ? row == 6 : row == 1;
-        int toRow;
-        int toCol;
+        int promotionRow = pawn.getColor() == Color.WHITE ? 0 : 7;
 
         // Push one square
-        toRow = row + forward;
-        moveList.add(Move.createQuietMove(row, col, toRow, col, pawn));
+        int toRow = row + forward;
+        if (position[toRow][col] == null) {
+            if (toRow == promotionRow) {
+                moveList.add(Move.createPromotionMove(row, col, toRow, col, pawn, PieceType.QUEEN));
+                moveList.add(Move.createPromotionMove(row, col, toRow, col, pawn, PieceType.ROOK));
+                moveList.add(Move.createPromotionMove(row, col, toRow, col, pawn, PieceType.BISHOP));
+                moveList.add(Move.createPromotionMove(row, col, toRow, col, pawn, PieceType.KNIGHT));
 
-        // Push two squares
-        if (hasNotMoved && position[row + forward][col] == null) {
+            } else {
+                moveList.add(Move.createQuietMove(row, col, toRow, col, pawn));
+            }
+
+            // Push two squares
             toRow = row + 2*forward;
-            moveList.add(Move.createDoublePawnPush(row, col, toRow, col, pawn));
+            if (hasNotMoved && position[toRow][col] == null) {
+                moveList.add(Move.createDoublePawnPush(row, col, toRow, col, pawn));
+            }
         }
 
         // Capture to the right
         toRow = row + forward;
-        toCol = col + 1;
+        int toCol = col + 1;
         if (toCol < 8) {
             Piece capturedPiece = position[toRow][toCol];
             if (capturedPiece != null && capturedPiece.getColor() != pawn.getColor()) {
-                moveList.add(Move.createCapture(row, col, toRow, toCol, pawn, capturedPiece));
+                if (toRow == promotionRow) {
+                    moveList.add(Move.createPromotionCapture(row, col, toRow, toCol, pawn, capturedPiece, PieceType.QUEEN));
+                    moveList.add(Move.createPromotionCapture(row, col, toRow, toCol, pawn, capturedPiece, PieceType.ROOK));
+                    moveList.add(Move.createPromotionCapture(row, col, toRow, toCol, pawn, capturedPiece, PieceType.BISHOP));
+                    moveList.add(Move.createPromotionCapture(row, col, toRow, toCol, pawn, capturedPiece, PieceType.KNIGHT));
+                } else {
+                    moveList.add(Move.createCapture(row, col, toRow, toCol, pawn, capturedPiece));
+                }
             }
         }
 
@@ -138,7 +152,14 @@ public class MoveGenerator {
         if (toCol >= 0) {
             Piece capturedPiece = position[toRow][toCol];
             if (capturedPiece != null && capturedPiece.getColor() != pawn.getColor()) {
-                moveList.add(Move.createCapture(row, col, toRow, toCol, pawn, capturedPiece));
+                if (toRow == promotionRow) {
+                    moveList.add(Move.createPromotionCapture(row, col, toRow, toCol, pawn, capturedPiece, PieceType.QUEEN));
+                    moveList.add(Move.createPromotionCapture(row, col, toRow, toCol, pawn, capturedPiece, PieceType.ROOK));
+                    moveList.add(Move.createPromotionCapture(row, col, toRow, toCol, pawn, capturedPiece, PieceType.BISHOP));
+                    moveList.add(Move.createPromotionCapture(row, col, toRow, toCol, pawn, capturedPiece, PieceType.KNIGHT));
+                } else {
+                    moveList.add(Move.createCapture(row, col, toRow, toCol, pawn, capturedPiece));
+                }
             }
         }
     }

@@ -42,6 +42,20 @@ public class Move {
         return move;
     }
 
+    public static Move createPromotionMove(int fromRow, int fromCol, int toRow, int toCol, Piece movedPiece, PieceType promotionPieceType) {
+        Move move = createQuietMove(fromRow, fromCol, toRow, toCol, movedPiece);
+        move.setPromotion(true);
+        move.setPromotionPiece(new Piece(promotionPieceType, movedPiece.getColor()));
+        return move;
+    }
+
+    public static Move createPromotionCapture(int fromRow, int fromCol, int toRow, int toCol, Piece movedPiece, Piece capturedPiece, PieceType promotionPieceType) {
+        Move move = createPromotionMove(fromRow, fromCol, toRow, toCol, movedPiece, promotionPieceType);
+        move.setCapture(true);
+        move.setCapturedPiece(capturedPiece);
+        return move;
+    }
+
     @Override
     public String toString() {
         return movedPiece + ": " + Utils.coordsToSquareString(fromRow, fromCol) + Utils.coordsToSquareString(toRow, toCol) +
