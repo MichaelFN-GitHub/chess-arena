@@ -20,22 +20,24 @@ public class MoveGenerator {
 
                 switch (piece.getType()) {
                     case PAWN:
-                        generatePawnMoves(piece, i, j, position);
+                        generatePawnMoves(moveList, piece, i, j, position);
+                        // TODO: En passant
                         break;
                     case KNIGHT:
-                        generateKnightMoves(piece, i, j, position);
+                        generateKnightMoves(moveList, piece, i, j, position);
                         break;
                     case BISHOP:
-                        generateBishopMoves(piece, i, j, position);
+                        generateBishopMoves(moveList, piece, i, j, position);
                         break;
                     case ROOK:
-                        generateRookMoves(piece, i, j, position);
+                        generateRookMoves(moveList, piece, i, j, position);
                         break;
                     case QUEEN:
-                        generateQueenMoves(piece, i, j, position);
+                        generateQueenMoves(moveList, piece, i, j, position);
                         break;
                     case KING:
-                        generateKingMoves(piece, i, j, position);
+                        generateKingMoves(moveList, piece, i, j, position);
+                        // TODO: Castling
                         break;
                 }
             }
@@ -44,22 +46,67 @@ public class MoveGenerator {
         return moveList;
     }
 
-    private static void generateKingMoves(Piece piece, int row, int col, Piece[][] position) {
+    private static void generateKingMoves(List<Move> moveList, Piece king, int row, int col, Piece[][] position) {
+        int[][] jumps = {{1,0}, {-1,0}, {0,1}, {0,-1}, {1,1}, {1,-1}, {-1,1}, {-1,-1}};
+        generateJumpMoves(moveList, king, row, col, position, jumps);
     }
 
-    private static void generateQueenMoves(Piece piece, int row, int col, Piece[][] position) {
+    private static void generateKnightMoves(List<Move> moveList, Piece knight, int row, int col, Piece[][] position) {
+        int[][] jumps = {{-2,-1}, {-2,1}, {-1,-2}, {-1,2}, {1,-2}, {1,2}, {2,-1}, {2,1}};
+        generateJumpMoves(moveList, knight, row, col, position, jumps);
     }
 
-    private static void generateRookMoves(Piece piece, int row, int col, Piece[][] position) {
+    private static void generateJumpMoves(List<Move> moveList, Piece piece, int row, int col, Piece[][] position, int[][] jumps) {
+        for (int[] jump : jumps) {
+            int toRow = row + jump[0];
+            int toCol = col + jump[1];
+            if (!Utils.inBounds(toRow, toCol)) continue;
+
+            Piece target = position[toRow][toCol];
+            if (target == null) {
+                moveList.add(Move.createQuietMove(row, col, toRow, toCol, piece));
+            } else if (target.getColor() != piece.getColor()) {
+                moveList.add(Move.createCapture(row, col, toRow, toCol, piece, target));
+            }
+        }
     }
 
-    private static void generateBishopMoves(Piece piece, int row, int col, Piece[][] position) {
+    private static void generateQueenMoves(List<Move> moveList, Piece queen, int row, int col, Piece[][] position) {
+        generateRookMoves(moveList, queen, row, col, position);
+        generateBishopMoves(moveList, queen, row, col, position);
     }
 
-    private static void generateKnightMoves(Piece piece, int row, int col, Piece[][] position) {
+    private static void generateRookMoves(List<Move> moveList, Piece rook, int row, int col, Piece[][] position) {
+        int[][] directions = {{1,0}, {-1,0}, {0,1}, {0,-1}};
+        generateSlidingMoves(moveList, rook, row, col, position, directions);
     }
 
-    public static void generatePawnMoves(Piece pawn, int row, int col, Piece[][] position) {
+    private static void generateBishopMoves(List<Move> moveList, Piece bishop, int row, int col, Piece[][] position) {
+        int[][] directions = {{1,1}, {1,-1}, {-1,1}, {-1,-1}};
+        generateSlidingMoves(moveList, bishop, row, col, position, directions);
+    }
+
+    private static void generateSlidingMoves(List<Move> moveList, Piece piece, int row, int col, Piece[][] position, int[][] directions) {
+        for (int[] dir : directions) {
+            int toRow = row + dir[0];
+            int toCol = col + dir[1];
+            while (Utils.inBounds(toRow, toCol)) {
+                Piece capturedPiece = position[toRow][toCol];
+                if (capturedPiece == null) {
+                    moveList.add(Move.createQuietMove(row, col, toRow, toCol, piece));
+                } else {
+                    if (capturedPiece.getColor() != piece.getColor()) {
+                        moveList.add(Move.createCapture(row, col, toRow, toCol, piece, capturedPiece));
+                    }
+                    break;
+                }
+                toRow += dir[0];
+                toCol += dir[1];
+            }
+        }
+    }
+
+    public static void generatePawnMoves(List<Move> moveList, Piece pawn, int row, int col, Piece[][] position) {
         int forward = pawn.getColor() == Color.WHITE ? -1 : 1;
         boolean hasNotMoved = pawn.getColor() == Color.WHITE ? row == 6 : row == 1;
         int toRow;
@@ -94,7 +141,5 @@ public class MoveGenerator {
                 moveList.add(Move.createCapture(row, col, toRow, toCol, pawn, capturedPiece));
             }
         }
-
-        // En passant (later)
     }
 }

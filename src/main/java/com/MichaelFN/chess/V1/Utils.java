@@ -46,4 +46,8 @@ public class Utils {
     public static String coordsToSquareString(int row, int col) {
         return "" + (char) ('a' + col) + (8 - row);
     }
+
+    public static boolean inBounds(int row, int col) {
+        return row >= 0 && row < 8 && col >= 0 && col < 8;
+    }
 }
