@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MoveGenerator {
+    // TODO: generateLegalMoves
 
     public static List<Move> generatePseudoLegalMoves(BoardState boardState) {
         List<Move> moveList = new ArrayList<>();

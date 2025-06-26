@@ -1,7 +1,11 @@
 package com.MichaelFN.chess.V1;
 
+import java.util.Stack;
+
 public class BoardState {
     private BoardInitializer boardInitializer;
+
+    // Chess rule variables
     private Piece[][] position;
     private Color playerToMove;
     private boolean[][] castlingRights;
@@ -9,9 +13,145 @@ public class BoardState {
     private int halfmoveClock;
     private int fullmoveNumber;
 
+    // History variables
+    private Stack<Move> moveHistory;
+    private Stack<boolean[][]> castlingRightsHistory;
+    private Stack<int[]> enPassantSquareHistory;
+    private Stack<Integer> halfmoveClockHistory;
+    private Stack<Integer> fullmoveNumberHistory;
+
     public BoardState() {
         this.boardInitializer = new BoardInitializer(this);
         boardInitializer.initializeStartingPosition();
+
+        moveHistory = new Stack<>();
+        castlingRightsHistory = new Stack<>();
+        enPassantSquareHistory = new Stack<>();
+        halfmoveClockHistory = new Stack<>();
+        fullmoveNumberHistory = new Stack<>();
+    }
+
+    public void makeMove(Move move) {
+        int fromRow = move.getFromRow();
+        int fromCol = move.getFromCol();
+        int toRow = move.getToRow();
+        int toCol = move.getToCol();
+        Piece movedPiece = move.getMovedPiece();
+        Piece capturedPiece = move.getCapturedPiece();
+
+        // Update history
+        moveHistory.push(move);
+        castlingRightsHistory.push(castlingRights);
+        enPassantSquareHistory.push(enPassantSquare);
+        halfmoveClockHistory.push(halfmoveClock);
+        fullmoveNumberHistory.push(fullmoveNumber);
+
+        // Move piece
+        position[fromRow][fromCol] = null;
+        position[toRow][toCol] = movedPiece;
+
+        // En passant
+        if (move.isEnPassant()) {
+            int rowBehindPawn = toRow + (movedPiece.getColor() == Color.WHITE ? 1 : -1);
+            position[rowBehindPawn][toCol] = null;
+        }
+
+        // Double pawn push
+        if (move.isDoublePawnPush()) {
+            int rowBehindPawn = toRow + (movedPiece.getColor() == Color.WHITE ? 1 : -1);
+            enPassantSquare = new int[]{rowBehindPawn, toCol};
+        } else {
+            enPassantSquare = null;
+        }
+
+        // Promotion
+        if (move.isPromotion()) {
+            Piece promotionPiece = move.getPromotionPiece();
+            position[toRow][toCol] = promotionPiece;
+        }
+
+        // Castling
+        if (move.isCastleKingside()) {
+
+            // Move rook to left of king
+            int rookFromCol = toCol + 1;
+            int rookToCol = toCol - 1;
+            Piece rook = position[toRow][rookFromCol];
+            position[toRow][rookFromCol] = null;
+            position[toRow][rookToCol] = rook;
+
+        } else if (move.isCastleQueenside()) {
+
+            // Move rook to right of king
+            int rookFromCol = toCol - 2;
+            int rookToCol = toCol + 1;
+            Piece rook = position[toRow][rookFromCol];
+            position[toRow][rookFromCol] = null;
+            position[toRow][rookToCol] = rook;
+        }
+
+        // Castling rights
+        if (movedPiece.getType() == PieceType.KING) {
+            int colorIndex = movedPiece.getColor().ordinal();
+            castlingRights[colorIndex][0] = false;
+            castlingRights[colorIndex][1] = false;
+        } else if (movedPiece.getType() == PieceType.ROOK) {
+            int colorIndex = movedPiece.getColor().ordinal();
+            if (fromCol == 7) {
+                castlingRights[colorIndex][0] = false;
+            } else if (fromCol == 0) {
+                castlingRights[colorIndex][1] = false;
+            }
+        } else if (capturedPiece.getType() == PieceType.ROOK) {
+            int colorIndex = 1 - movedPiece.getColor().ordinal();
+            if (toCol == 7) {
+                castlingRights[colorIndex][0] = false;
+            } else if (toCol == 0) {
+                castlingRights[colorIndex][1] = false;
+            }
+        }
+
+        if (move.isCapture() || movedPiece.getType() == PieceType.PAWN) halfmoveClock = 0;
+        else halfmoveClock++;
+
+        if (movedPiece.getColor() == Color.BLACK) fullmoveNumber++;
+    }
+
+    public void unmakeMove() {
+        Move move = moveHistory.pop();
+        int fromRow = move.getFromRow();
+        int fromCol = move.getFromCol();
+        int toRow = move.getToRow();
+        int toCol = move.getToCol();
+        Piece movedPiece = move.getMovedPiece();
+        Piece capturedPiece = move.getCapturedPiece();
+
+        // Move piece
+        position[fromRow][fromCol] = movedPiece;
+        position[toRow][toCol] = capturedPiece;
+
+        // En passant
+        if (move.isEnPassant()) {
+            int rowBehindPawn = toRow + (movedPiece.getColor() == Color.WHITE ? 1 : -1);
+            position[toRow][toCol] = null;
+            position[rowBehindPawn][toCol] = capturedPiece;
+        }
+
+        // Castling (move rook to starting square)
+        if (move.isCastleKingside()) {
+            int rookFromCol = toCol + 1;
+            position[toRow][rookFromCol] = new Piece(PieceType.ROOK, movedPiece.getColor());
+
+        } else if (move.isCastleQueenside()) {
+            int rookFromCol = toCol - 2;
+            position[toRow][rookFromCol] = new Piece(PieceType.ROOK, movedPiece.getColor());
+        }
+
+        // Update history
+        castlingRights = castlingRightsHistory.pop();
+        enPassantSquare = enPassantSquareHistory.pop();
+        halfmoveClock = halfmoveClockHistory.pop();
+        fullmoveNumber = fullmoveNumberHistory.pop();
     }
 
     public String generateFenString() {
