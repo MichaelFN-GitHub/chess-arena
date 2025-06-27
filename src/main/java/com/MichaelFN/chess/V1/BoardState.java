@@ -25,7 +25,7 @@ public class BoardState {
 
     public BoardState() {
         this.boardInitializer = new BoardInitializer(this);
-        boardInitializer.initializeStartingPosition();
+        reset();
 
         moveHistory = new Stack<>();
         castlingRightsHistory = new Stack<>();
@@ -128,6 +128,11 @@ public class BoardState {
     }
 
     public void unmakeMove() {
+        if (moveHistory.isEmpty()) {
+            System.out.println("Unable to unmake any more moves.");
+            return;
+        }
+
         Move move = moveHistory.pop();
         int fromRow = move.getFromRow();
         int fromCol = move.getFromCol();
@@ -237,6 +242,11 @@ public class BoardState {
     public void parseFEN(String FEN) {
         boardInitializer.initializeFromFen(FEN);
     }
+
+    public void reset() {
+        boardInitializer.initializeStartingPosition();
+    }
+
 
     public Piece[][] getPosition() {
         return position;

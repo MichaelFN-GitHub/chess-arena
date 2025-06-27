@@ -1,4 +1,4 @@
-package com.MichaelFN.chess;
+package com.MichaelFN.chess.Interfaces;
 
 /**
  * Defines the core methods for a chess engine interface.

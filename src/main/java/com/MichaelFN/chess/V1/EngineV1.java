@@ -1,6 +1,6 @@
 package com.MichaelFN.chess.V1;
 
-import com.MichaelFN.chess.EngineInterface;
+import com.MichaelFN.chess.Interfaces.EngineInterface;
 
 import java.util.Collections;
 import java.util.List;
@@ -11,26 +11,24 @@ public class EngineV1 implements EngineInterface {
 
     @Override
     public void initialize() {
-        System.out.println("Initializing...");
         boardState = new BoardState();
-        System.out.println("Initialized.");
+        System.out.println("V1: Initialized.");
     }
 
     @Override
     public void setPosition(String FEN) {
-        System.out.println("Setting position...");
         boardState.parseFEN(FEN);
-        System.out.println("Position has been set.");
+        System.out.println("V1: Position has been set.");
     }
 
     @Override
     public void startSearch(long timeLimitMillis) {
         // Chooses move at random
-        System.out.println("Search started...");
+        System.out.println("V1: Search started...");
         List<Move> moves = MoveGenerator.generateLegalMoves(boardState);
         Collections.shuffle(moves);
         moveToPlay = moves.getFirst();
-        System.out.println("Search stopped.");
+        System.out.println("V1: Search stopped.");
     }
 
     @Override
