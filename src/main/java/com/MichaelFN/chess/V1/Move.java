@@ -64,11 +64,15 @@ public class Move {
     }
 
     public static Move createCastleKingSide(int fromRow, int fromCol, int toRow, int toCol, Piece movedPiece) {
-        return null;
+        Move move = createQuietMove(fromRow, fromCol, toRow, toCol, movedPiece);
+        move.setCastleKingside(true);
+        return move;
     }
 
     public static Move createCastleQueenSide(int fromRow, int fromCol, int toRow, int toCol, Piece movedPiece) {
-        return null;
+        Move move = createQuietMove(fromRow, fromCol, toRow, toCol, movedPiece);
+        move.setCastleQueenside(true);
+        return move;
     }
 
     @Override

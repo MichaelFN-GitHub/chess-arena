@@ -34,6 +34,7 @@ public class BoardInitializer {
         }
 
         Piece[][] position = new Piece[8][8];
+        int[][] kingPositions = new int[2][2];
         for (int row = 0; row < 8; row++) {
             int col = 0;
             for (int j = 0; j < fenRanks[row].length(); j++) {
@@ -43,12 +44,16 @@ public class BoardInitializer {
                 } else {
                     String pieceString = String.valueOf(c);
                     Piece piece = Utils.stringToPieceMap.get(pieceString);
+                    if (piece.getType() == PieceType.KING) {
+                        kingPositions[piece.getColor().ordinal()] = new int[]{row,col};
+                    }
                     position[row][col] = piece;
                     col++;
                 }
             }
         }
         boardState.setPosition(position);
+        boardState.setKingPositions(kingPositions);
         boardState.setPlayerToMove(fenSections[1].equals("w") ? Color.WHITE : Color.BLACK);
 
         boolean[][] castlingRights = new boolean[2][2];
@@ -64,14 +69,20 @@ public class BoardInitializer {
 
     public void initializeFromStringArray(String[][] stringArray) {
         Piece[][] position = new Piece[8][8];
+        int[][] kingPositions = new int[2][2];
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
                 String pieceString = stringArray[i][j];
                 Piece piece = Utils.stringToPieceMap.get(pieceString);
                 position[i][j] = piece;
+
+                if (piece.getType() == PieceType.KING) {
+                    kingPositions[piece.getColor().ordinal()] = new int[]{i,j};
+                }
             }
         }
         boardState.setPosition(position);
+        boardState.setKingPositions(kingPositions);
         boardState.setPlayerToMove(Color.WHITE);
         boardState.setCastlingRights(new boolean[][]{{true,true}, {true,true}});
         boardState.setEnPassantSquare(null);

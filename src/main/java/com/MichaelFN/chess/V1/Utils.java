@@ -22,6 +22,7 @@ public class Utils {
         put("q", new Piece(PieceType.QUEEN, Color.BLACK));
         put("K", new Piece(PieceType.KING, Color.WHITE));
         put("k", new Piece(PieceType.KING, Color.BLACK));
+        put(" ", null);
     }};
 
     public static final HashMap<Piece, String> pieceToStringMap = new HashMap<>();
@@ -29,7 +30,6 @@ public class Utils {
         for (Map.Entry<String,Piece> entry : stringToPieceMap.entrySet()) {
             pieceToStringMap.put(entry.getValue(), entry.getKey());
         }
-        pieceToStringMap.put(null, " ");
     }
 
     public static int[] squareStringToCoords(String square) {
@@ -52,11 +52,14 @@ public class Utils {
         return "" + (char) ('a' + col) + (8 - row);
     }
 
+    public static boolean isSquareAttacked(int[] square, Piece[][] position, Color attackerColor) {
+        return isSquareAttacked(square[0], square[1], position, attackerColor);
+    }
+
     public static boolean isSquareAttacked(int row, int col, Piece[][] position, Color attackerColor) {
         // Pawn
-        int pawnDir = attackerColor == Color.WHITE ? -1 : 1;
+        int pawnRow = row + (attackerColor == Color.WHITE ? 1 : -1);
         int[] pawnCols = {col - 1, col + 1};
-        int pawnRow = row + pawnDir;
 
         for (int pawnCol : pawnCols) {
             if (inBounds(pawnRow, pawnCol)) {

@@ -5,9 +5,9 @@ import org.junit.Test;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.List;
-import java.util.Objects;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -18,11 +18,13 @@ public class FENTest {
     public void testFenParsingAndGeneration() throws IOException {
         BoardState boardState = new BoardState();
 
+        InputStream inputStream = getClass().getClassLoader().getResourceAsStream("fen_test_positions.txt");
+        if (inputStream == null) {
+            throw new IllegalArgumentException("FEN test positions not found in resources!");
+        }
+
         List<String> fenStrings;
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(Objects.requireNonNull(
-                this.getClass()
-                        .getClassLoader()
-                        .getResourceAsStream("fen_test_positions.txt"))))) {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
             fenStrings = reader.lines().toList();
         }
 

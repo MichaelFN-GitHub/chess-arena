@@ -1,10 +1,32 @@
 package com.MichaelFN.chess.V1;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 public class MoveGenerator {
-    // TODO: generateLegalMoves
+
+    public static List<Move> generateLegalMoves(BoardState boardState) {
+        List<Move> legalMoves = new ArrayList<>();
+
+        Piece[][] position = boardState.getPosition();
+        Color playerToMove = boardState.getPlayerToMove();
+        Color opponentColor = (playerToMove == Color.WHITE) ? Color.BLACK : Color.WHITE;
+
+        // Make every pseudo legal move and check if king is attacked
+        List<Move> pseudoLegalMoves = generatePseudoLegalMoves(boardState);
+        for (Move move : pseudoLegalMoves) {
+            boardState.makeMove(move);
+            int[] kingPosition = boardState.getKingPosition(playerToMove);
+            if (!Utils.isSquareAttacked(kingPosition, position, opponentColor)) {
+                legalMoves.add(move);
+            }
+            boardState.unmakeMove();
+        }
+
+        return legalMoves;
+    }
 
     public static List<Move> generatePseudoLegalMoves(BoardState boardState) {
         List<Move> moveList = new ArrayList<>();

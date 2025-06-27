@@ -20,6 +20,9 @@ public class BoardState {
     private Stack<Integer> halfmoveClockHistory;
     private Stack<Integer> fullmoveNumberHistory;
 
+    // Helpers
+    private int[][] kingPositions;
+
     public BoardState() {
         this.boardInitializer = new BoardInitializer(this);
         boardInitializer.initializeStartingPosition();
@@ -41,8 +44,11 @@ public class BoardState {
 
         // Update history
         moveHistory.push(move);
-        castlingRightsHistory.push(castlingRights);
-        enPassantSquareHistory.push(enPassantSquare);
+        castlingRightsHistory.push(new boolean[][] {
+                { castlingRights[0][0],castlingRights[0][1] },
+                { castlingRights[1][0], castlingRights[1][1]}
+        });
+        enPassantSquareHistory.push(enPassantSquare == null ? null : new int[]{enPassantSquare[0], enPassantSquare[1]});
         halfmoveClockHistory.push(halfmoveClock);
         fullmoveNumberHistory.push(fullmoveNumber);
 
@@ -90,11 +96,13 @@ public class BoardState {
             position[toRow][rookToCol] = rook;
         }
 
-        // Castling rights
+        // Castling rights and king position
         if (movedPiece.getType() == PieceType.KING) {
             int colorIndex = movedPiece.getColor().ordinal();
             castlingRights[colorIndex][0] = false;
             castlingRights[colorIndex][1] = false;
+            kingPositions[colorIndex][0] = toRow;
+            kingPositions[colorIndex][1] = toCol;
         } else if (movedPiece.getType() == PieceType.ROOK) {
             int colorIndex = movedPiece.getColor().ordinal();
             if (fromCol == 7) {
@@ -102,7 +110,7 @@ public class BoardState {
             } else if (fromCol == 0) {
                 castlingRights[colorIndex][1] = false;
             }
-        } else if (capturedPiece.getType() == PieceType.ROOK) {
+        } else if (move.isCapture() && capturedPiece.getType() == PieceType.ROOK) {
             int colorIndex = 1 - movedPiece.getColor().ordinal();
             if (toCol == 7) {
                 castlingRights[colorIndex][0] = false;
@@ -115,6 +123,8 @@ public class BoardState {
         else halfmoveClock++;
 
         if (movedPiece.getColor() == Color.BLACK) fullmoveNumber++;
+
+        playerToMove = playerToMove == Color.WHITE ? Color.BLACK : Color.WHITE;
     }
 
     public void unmakeMove() {
@@ -130,6 +140,13 @@ public class BoardState {
         position[fromRow][fromCol] = movedPiece;
         position[toRow][toCol] = capturedPiece;
 
+        // King position
+        if (movedPiece.getType() == PieceType.KING) {
+            int colorIndex = movedPiece.getColor().ordinal();
+            kingPositions[colorIndex][0] = fromRow;
+            kingPositions[colorIndex][1] = fromCol;
+        }
+
         // En passant
         if (move.isEnPassant()) {
             int rowBehindPawn = toRow + (movedPiece.getColor() == Color.WHITE ? 1 : -1);
@@ -140,11 +157,17 @@ public class BoardState {
         // Castling (move rook to starting square)
         if (move.isCastleKingside()) {
             int rookFromCol = toCol + 1;
-            position[toRow][rookFromCol] = new Piece(PieceType.ROOK, movedPiece.getColor());
+            int rookToCol = toCol - 1;
+            Piece rook = position[toRow][rookToCol];
+            position[toRow][rookFromCol] = rook;
+            position[toRow][rookToCol] = null;
 
         } else if (move.isCastleQueenside()) {
             int rookFromCol = toCol - 2;
-            position[toRow][rookFromCol] = new Piece(PieceType.ROOK, movedPiece.getColor());
+            int rookToCol = toCol + 1;
+            Piece rook = position[toRow][rookToCol];
+            position[toRow][rookFromCol] = rook;
+            position[toRow][rookToCol] = null;
         }
 
         // Update history
@@ -152,6 +175,8 @@ public class BoardState {
         enPassantSquare = enPassantSquareHistory.pop();
         halfmoveClock = halfmoveClockHistory.pop();
         fullmoveNumber = fullmoveNumberHistory.pop();
+
+        playerToMove = playerToMove == Color.WHITE ? Color.BLACK : Color.WHITE;
     }
 
     public String generateFenString() {
@@ -259,5 +284,17 @@ public class BoardState {
 
     public void setFullmoveNumber(int fullmoveNumber) {
         this.fullmoveNumber = fullmoveNumber;
+    }
+
+    public int[][] getKingPositions() {
+        return kingPositions;
+    }
+
+    public void setKingPositions(int[][] kingPositions) {
+        this.kingPositions = kingPositions;
+    }
+
+    public int[] getKingPosition(Color color) {
+        return kingPositions[color.ordinal()];
     }
 }
