@@ -1,5 +1,7 @@
 package com.MichaelFN.chess.V1;
 
+import java.util.Objects;
+
 public class Move {
     private int fromRow;
     private int fromCol;
@@ -83,6 +85,20 @@ public class Move {
                 (isEnPassant ? " (en passant)" : "") +
                 (isCastleKingside ? " (O-O)" : "") +
                 (isCastleQueenside ? " (O-O-O)" : "");
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass())
+            return false;
+        Move move = (Move) obj;
+        return (fromRow == move.getFromRow() && fromCol == move.getFromCol() && toRow == move.getToRow() && toCol == move.getToCol());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(fromRow, fromCol, toRow, toCol);
     }
 
     public int getFromRow() {

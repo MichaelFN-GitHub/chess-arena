@@ -148,6 +148,24 @@ public class Utils {
         return row >= 0 && row < 8 && col >= 0 && col < 8;
     }
 
+    public static String createUciMove(int fromRow, int fromCol, int toRow, int toCol, Piece movedPiece) {
+        String fromSquare = Utils.coordsToSquareString(fromRow, fromCol);
+        String toSquare = Utils.coordsToSquareString(toRow, toCol);
+
+        StringBuilder uci = new StringBuilder();
+        uci.append(fromSquare).append(toSquare);
+
+        // Promotion
+        int lastRow = movedPiece.getColor() == Color.WHITE ? 0 : 7;
+        if (movedPiece.getType() == PieceType.PAWN && toRow == lastRow) {
+
+            // Default to queen promotion
+            uci.append('q');
+        }
+
+        return uci.toString();
+    }
+
     public static String moveToUci(Move move) {
         if (move == null) return "0000";
 
