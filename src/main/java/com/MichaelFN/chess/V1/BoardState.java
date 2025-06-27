@@ -190,7 +190,7 @@ public class BoardState {
                         FEN.append(counter);
                         counter = 0;
                     }
-                    String pieceString = Utils.pieceToStringMap.get(piece);
+                    String pieceString = Utils.pieceToString(piece);
                     FEN.append(pieceString);
                 } else {
                     counter++;
@@ -224,7 +224,7 @@ public class BoardState {
             stringBuilder.append("+---+---+---+---+---+---+---+---+\n| ");
             for (int j = 0; j < 8; j++) {
                 Piece piece = position[i][j];
-                String pieceString = Utils.pieceToStringMap.get(piece);
+                String pieceString = Utils.pieceToString(piece);
                 stringBuilder.append(pieceString).append(" | ");
             }
             stringBuilder.append(8-i).append("\n");

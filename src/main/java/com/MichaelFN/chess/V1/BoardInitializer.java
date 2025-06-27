@@ -43,7 +43,7 @@ public class BoardInitializer {
                     col += Character.getNumericValue(c);
                 } else {
                     String pieceString = String.valueOf(c);
-                    Piece piece = Utils.stringToPieceMap.get(pieceString);
+                    Piece piece = Utils.stringToPiece(pieceString);
                     if (piece.getType() == PieceType.KING) {
                         kingPositions[piece.getColor().ordinal()] = new int[]{row,col};
                     }
@@ -73,7 +73,7 @@ public class BoardInitializer {
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
                 String pieceString = stringArray[i][j];
-                Piece piece = Utils.stringToPieceMap.get(pieceString);
+                Piece piece = Utils.stringToPiece(pieceString);
                 position[i][j] = piece;
 
                 if (piece.getType() == PieceType.KING) {

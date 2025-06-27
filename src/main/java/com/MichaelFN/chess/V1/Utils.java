@@ -9,27 +9,38 @@ public class Utils {
     public static final int[][] BISHOP_DIRECTIONS = {{1,1}, {1,-1}, {-1,1}, {-1,-1}};
     public static final int[][] ROOK_DIRECTIONS = {{1,0}, {-1,0}, {0,1}, {0,-1}};
 
-    public static final HashMap<String, Piece> stringToPieceMap = new HashMap<>() {{
-        put("P", new Piece(PieceType.PAWN, Color.WHITE));
-        put("p", new Piece(PieceType.PAWN, Color.BLACK));
-        put("N", new Piece(PieceType.KNIGHT, Color.WHITE));
-        put("n", new Piece(PieceType.KNIGHT, Color.BLACK));
-        put("B", new Piece(PieceType.BISHOP, Color.WHITE));
-        put("b", new Piece(PieceType.BISHOP, Color.BLACK));
-        put("R", new Piece(PieceType.ROOK, Color.WHITE));
-        put("r", new Piece(PieceType.ROOK, Color.BLACK));
-        put("Q", new Piece(PieceType.QUEEN, Color.WHITE));
-        put("q", new Piece(PieceType.QUEEN, Color.BLACK));
-        put("K", new Piece(PieceType.KING, Color.WHITE));
-        put("k", new Piece(PieceType.KING, Color.BLACK));
-        put(" ", null);
-    }};
+    public static String pieceToString(Piece piece) {
+        if (piece == null) return " ";
+        return switch (piece.getType()) {
+            case PAWN -> piece.getColor() == Color.WHITE ? "P" : "p";
+            case KNIGHT -> piece.getColor() == Color.WHITE ? "N" : "n";
+            case BISHOP -> piece.getColor() == Color.WHITE ? "B" : "b";
+            case ROOK -> piece.getColor() == Color.WHITE ? "R" : "r";
+            case QUEEN -> piece.getColor() == Color.WHITE ? "Q" : "q";
+            case KING -> piece.getColor() == Color.WHITE ? "K" : "k";
+        };
+    }
 
-    public static final HashMap<Piece, String> pieceToStringMap = new HashMap<>();
-    static {
-        for (Map.Entry<String,Piece> entry : stringToPieceMap.entrySet()) {
-            pieceToStringMap.put(entry.getValue(), entry.getKey());
+    public static Piece stringToPiece(String s) {
+        if (s == null || s.isEmpty() || s.equals(" ")) {
+            return null;
         }
+
+        char c = s.charAt(0);
+        Color color = Character.isUpperCase(c) ? Color.WHITE : Color.BLACK;
+
+        PieceType type;
+        switch (Character.toUpperCase(c)) {
+            case 'P' -> type = PieceType.PAWN;
+            case 'N' -> type = PieceType.KNIGHT;
+            case 'B' -> type = PieceType.BISHOP;
+            case 'R' -> type = PieceType.ROOK;
+            case 'Q' -> type = PieceType.QUEEN;
+            case 'K' -> type = PieceType.KING;
+            default -> throw new IllegalArgumentException("Invalid piece character: " + c);
+        }
+
+        return new Piece(type, color);
     }
 
     public static int[] squareStringToCoords(String square) {
@@ -135,5 +146,87 @@ public class Utils {
 
     public static boolean inBounds(int row, int col) {
         return row >= 0 && row < 8 && col >= 0 && col < 8;
+    }
+
+    public static String moveToUci(Move move) {
+        if (move == null) return "0000";
+
+        String fromSquare = Utils.coordsToSquareString(move.getFromRow(), move.getFromCol());
+        String toSquare = Utils.coordsToSquareString(move.getToRow(), move.getToCol());
+
+        StringBuilder uci = new StringBuilder();
+        uci.append(fromSquare).append(toSquare);
+
+        if (move.isPromotion()) {
+            PieceType pieceType = move.getPromotionPiece().getType();
+            Piece piece = new Piece(pieceType, Color.BLACK);
+            System.out.println("pieceType: " + pieceType); // should be BISHOP
+            System.out.println("piece object: " + piece);  // check if this says null or shows info
+            System.out.println("piece.getType(): " + piece.getType()); // check for NPE here
+            String pieceString = piece.toString();
+            uci.append(pieceString);
+        }
+
+        return uci.toString();
+    }
+
+    public static Move uciToMove(String uciMove, BoardState boardState) {
+        if (uciMove.length() < 4) {
+            throw new IllegalArgumentException("Invalid UCI move: " + uciMove);
+        }
+
+        String fromSquare = uciMove.substring(0, 2);
+        String toSquare = uciMove.substring(2, 4);
+
+        int[] fromCoords = squareStringToCoords(fromSquare);
+        int[] toCoords = squareStringToCoords(toSquare);
+
+        int fromRow = fromCoords[0];
+        int fromCol = fromCoords[1];
+        int toRow = toCoords[0];
+        int toCol = toCoords[1];
+        Piece[][] position = boardState.getPosition();
+
+        Piece movedPiece = position[fromRow][fromCol];
+        Piece capturedPiece = position[toRow][toCol];
+
+        // Promotion
+        if (uciMove.length() == 5) {
+            char promoChar = uciMove.charAt(4);
+            PieceType promoType = stringToPiece("" + promoChar).getType();
+
+            System.out.println("HERE 1");
+            if (capturedPiece != null) {
+                System.out.println("HERE 2");
+                return Move.createPromotionCapture(fromRow, fromCol, toRow, toCol, movedPiece, capturedPiece, promoType);
+            }
+
+            System.out.println("HERE 3");
+            return Move.createPromotionMove(fromRow, fromCol, toRow, toCol, movedPiece, promoType);
+        }
+
+        // Capture
+        if (capturedPiece != null) {
+            return Move.createCapture(fromRow, fromCol, toRow, toCol, movedPiece, capturedPiece);
+        }
+
+        // En passant
+        if (movedPiece.getType() == PieceType.PAWN && fromCol != toCol) {
+            int[] enPassantSquare = boardState.getEnPassantSquare();
+            if (enPassantSquare != null && enPassantSquare[0] == toRow && enPassantSquare[1] == toCol) {
+                return Move.createEnPassantCapture(fromRow, fromCol, toRow, toCol, movedPiece);
+            }
+        }
+
+        // Castling
+        if (movedPiece.getType() == PieceType.KING && Math.abs(toCol - fromCol) == 2) {
+            if (toCol > fromCol) {
+                return Move.createCastleKingSide(fromRow, fromCol, toRow, toCol, movedPiece);
+            } else {
+                return Move.createCastleQueenSide(fromRow, fromCol, toRow, toCol, movedPiece);
+            }
+        }
+
+        return Move.createQuietMove(fromRow, fromCol, toRow, toCol, movedPiece);
     }
 }

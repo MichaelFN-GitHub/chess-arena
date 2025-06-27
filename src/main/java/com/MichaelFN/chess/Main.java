@@ -1,8 +1,6 @@
 package com.MichaelFN.chess;
 
-import com.MichaelFN.chess.V1.BoardState;
-import com.MichaelFN.chess.V1.Move;
-import com.MichaelFN.chess.V1.MoveGenerator;
+import com.MichaelFN.chess.V1.*;
 
 import java.util.Arrays;
 import java.util.List;
@@ -10,11 +8,21 @@ import java.util.List;
 public class Main {
     public static void main(String[] args) {
         BoardState boardState = new BoardState();
-        boardState.parseFEN("8/8/8/8/8/K7/P7/k7 w - - 0 1");
-        System.out.println(boardState);
+        EngineV1 V1 = new EngineV1();
+        V1.initialize();
+        for (int i = 0; i < 1000; i++) {
+            System.out.println(boardState);
+            String FEN = boardState.generateFenString();
 
-        List<Move> moves = MoveGenerator.generateLegalMoves(boardState);
-        moves.forEach(System.out::println);
-        System.out.println("Total amount of moves: " + moves.size());
+            V1.setPosition(FEN);
+            V1.startSearch(1000);
+            String uciMove = V1.getBestMove();
+
+            System.out.println("Before UCI move:");
+            Move move = Utils.uciToMove(uciMove, boardState);
+            System.out.println("UCI move: " + uciMove);
+            System.out.println("Move: " + move);
+            boardState.makeMove(move);
+        }
     }
 }

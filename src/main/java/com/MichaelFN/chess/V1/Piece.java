@@ -19,6 +19,6 @@ public class Piece {
 
     @Override
     public String toString() {
-        return Utils.pieceToStringMap.get(this);
+        return Utils.pieceToString(this);
     }
 }
