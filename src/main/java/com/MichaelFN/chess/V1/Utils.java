@@ -160,9 +160,6 @@ public class Utils {
         if (move.isPromotion()) {
             PieceType pieceType = move.getPromotionPiece().getType();
             Piece piece = new Piece(pieceType, Color.BLACK);
-            System.out.println("pieceType: " + pieceType); // should be BISHOP
-            System.out.println("piece object: " + piece);  // check if this says null or shows info
-            System.out.println("piece.getType(): " + piece.getType()); // check for NPE here
             String pieceString = piece.toString();
             uci.append(pieceString);
         }
@@ -195,13 +192,10 @@ public class Utils {
             char promoChar = uciMove.charAt(4);
             PieceType promoType = stringToPiece("" + promoChar).getType();
 
-            System.out.println("HERE 1");
             if (capturedPiece != null) {
-                System.out.println("HERE 2");
                 return Move.createPromotionCapture(fromRow, fromCol, toRow, toCol, movedPiece, capturedPiece, promoType);
             }
 
-            System.out.println("HERE 3");
             return Move.createPromotionMove(fromRow, fromCol, toRow, toCol, movedPiece, promoType);
         }
 
