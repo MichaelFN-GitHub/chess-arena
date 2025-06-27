@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Stack;
 
 public class BoardState {
-    private BoardInitializer boardInitializer;
+    private final BoardInitializer boardInitializer;
 
     // Chess rule variables
     private Piece[][] position;
@@ -15,11 +15,11 @@ public class BoardState {
     private int fullmoveNumber;
 
     // History variables
-    private Stack<Move> moveHistory;
-    private Stack<boolean[][]> castlingRightsHistory;
-    private Stack<int[]> enPassantSquareHistory;
-    private Stack<Integer> halfmoveClockHistory;
-    private Stack<Integer> fullmoveNumberHistory;
+    private final Stack<Move> moveHistory;
+    private final Stack<boolean[][]> castlingRightsHistory;
+    private final Stack<int[]> enPassantSquareHistory;
+    private final Stack<Integer> halfmoveClockHistory;
+    private final Stack<Integer> fullmoveNumberHistory;
 
     // Helpers
     private int[][] kingPositions;
@@ -70,7 +70,7 @@ public class BoardState {
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
                 Piece piece = position[i][j];
-                if (piece != null && piece.getType() != PieceType.KING) {
+                if (piece != null && piece.type() != PieceType.KING) {
                     onlyKings = false;
                     break;
                 }
@@ -105,13 +105,13 @@ public class BoardState {
 
         // En passant
         if (move.isEnPassant()) {
-            int rowBehindPawn = toRow + (movedPiece.getColor() == Color.WHITE ? 1 : -1);
+            int rowBehindPawn = toRow + (movedPiece.color() == Color.WHITE ? 1 : -1);
             position[rowBehindPawn][toCol] = null;
         }
 
         // Double pawn push
         if (move.isDoublePawnPush()) {
-            int rowBehindPawn = toRow + (movedPiece.getColor() == Color.WHITE ? 1 : -1);
+            int rowBehindPawn = toRow + (movedPiece.color() == Color.WHITE ? 1 : -1);
             enPassantSquare = new int[]{rowBehindPawn, toCol};
         } else {
             enPassantSquare = null;
@@ -144,21 +144,21 @@ public class BoardState {
         }
 
         // Castling rights and king position
-        if (movedPiece.getType() == PieceType.KING) {
-            int colorIndex = movedPiece.getColor().ordinal();
+        if (movedPiece.type() == PieceType.KING) {
+            int colorIndex = movedPiece.color().ordinal();
             castlingRights[colorIndex][0] = false;
             castlingRights[colorIndex][1] = false;
             kingPositions[colorIndex][0] = toRow;
             kingPositions[colorIndex][1] = toCol;
-        } else if (movedPiece.getType() == PieceType.ROOK) {
-            int colorIndex = movedPiece.getColor().ordinal();
+        } else if (movedPiece.type() == PieceType.ROOK) {
+            int colorIndex = movedPiece.color().ordinal();
             if (fromCol == 7) {
                 castlingRights[colorIndex][0] = false;
             } else if (fromCol == 0) {
                 castlingRights[colorIndex][1] = false;
             }
-        } else if (move.isCapture() && capturedPiece.getType() == PieceType.ROOK) {
-            int colorIndex = 1 - movedPiece.getColor().ordinal();
+        } else if (move.isCapture() && capturedPiece.type() == PieceType.ROOK) {
+            int colorIndex = 1 - movedPiece.color().ordinal();
             if (toCol == 7) {
                 castlingRights[colorIndex][0] = false;
             } else if (toCol == 0) {
@@ -166,10 +166,10 @@ public class BoardState {
             }
         }
 
-        if (move.isCapture() || movedPiece.getType() == PieceType.PAWN) halfmoveClock = 0;
+        if (move.isCapture() || movedPiece.type() == PieceType.PAWN) halfmoveClock = 0;
         else halfmoveClock++;
 
-        if (movedPiece.getColor() == Color.BLACK) fullmoveNumber++;
+        if (movedPiece.color() == Color.BLACK) fullmoveNumber++;
 
         playerToMove = playerToMove == Color.WHITE ? Color.BLACK : Color.WHITE;
     }
@@ -193,15 +193,15 @@ public class BoardState {
         position[toRow][toCol] = capturedPiece;
 
         // King position
-        if (movedPiece.getType() == PieceType.KING) {
-            int colorIndex = movedPiece.getColor().ordinal();
+        if (movedPiece.type() == PieceType.KING) {
+            int colorIndex = movedPiece.color().ordinal();
             kingPositions[colorIndex][0] = fromRow;
             kingPositions[colorIndex][1] = fromCol;
         }
 
         // En passant
         if (move.isEnPassant()) {
-            int rowBehindPawn = toRow + (movedPiece.getColor() == Color.WHITE ? 1 : -1);
+            int rowBehindPawn = toRow + (movedPiece.color() == Color.WHITE ? 1 : -1);
             position[toRow][toCol] = null;
             position[rowBehindPawn][toCol] = capturedPiece;
         }

@@ -37,9 +37,9 @@ public class MoveGenerator {
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
                 Piece piece = position[i][j];
-                if (piece == null || piece.getColor() != playerToMove) continue;
+                if (piece == null || piece.color() != playerToMove) continue;
 
-                switch (piece.getType()) {
+                switch (piece.type()) {
                     case PAWN:
                         generatePawnMoves(moveList, piece, i, j, position, enPassantSquare);
                         break;
@@ -83,7 +83,7 @@ public class MoveGenerator {
             Piece capturedPiece = position[toRow][toCol];
             if (capturedPiece == null) {
                 moveList.add(Move.createQuietMove(row, col, toRow, toCol, piece));
-            } else if (capturedPiece.getColor() != piece.getColor()) {
+            } else if (capturedPiece.color() != piece.color()) {
                 moveList.add(Move.createCapture(row, col, toRow, toCol, piece, capturedPiece));
             }
         }
@@ -111,7 +111,7 @@ public class MoveGenerator {
                 if (capturedPiece == null) {
                     moveList.add(Move.createQuietMove(row, col, toRow, toCol, piece));
                 } else {
-                    if (capturedPiece.getColor() != piece.getColor()) {
+                    if (capturedPiece.color() != piece.color()) {
                         moveList.add(Move.createCapture(row, col, toRow, toCol, piece, capturedPiece));
                     }
                     break;
@@ -123,9 +123,9 @@ public class MoveGenerator {
     }
 
     public static void generatePawnMoves(List<Move> moveList, Piece pawn, int row, int col, Piece[][] position, int[] enPassantSquare) {
-        int forward = pawn.getColor() == Color.WHITE ? -1 : 1;
-        boolean hasNotMoved = pawn.getColor() == Color.WHITE ? row == 6 : row == 1;
-        int promotionRow = pawn.getColor() == Color.WHITE ? 0 : 7;
+        int forward = pawn.color() == Color.WHITE ? -1 : 1;
+        boolean hasNotMoved = pawn.color() == Color.WHITE ? row == 6 : row == 1;
+        int promotionRow = pawn.color() == Color.WHITE ? 0 : 7;
 
         // Push one square
         int toRow = row + forward;
@@ -152,7 +152,7 @@ public class MoveGenerator {
         int toCol = col + 1;
         if (toCol < 8) {
             Piece capturedPiece = position[toRow][toCol];
-            if (capturedPiece != null && capturedPiece.getColor() != pawn.getColor()) {
+            if (capturedPiece != null && capturedPiece.color() != pawn.color()) {
                 if (toRow == promotionRow) {
                     moveList.add(Move.createPromotionCapture(row, col, toRow, toCol, pawn, capturedPiece, PieceType.QUEEN));
                     moveList.add(Move.createPromotionCapture(row, col, toRow, toCol, pawn, capturedPiece, PieceType.ROOK));
@@ -174,7 +174,7 @@ public class MoveGenerator {
         toCol = col - 1;
         if (toCol >= 0) {
             Piece capturedPiece = position[toRow][toCol];
-            if (capturedPiece != null && capturedPiece.getColor() != pawn.getColor()) {
+            if (capturedPiece != null && capturedPiece.color() != pawn.color()) {
                 if (toRow == promotionRow) {
                     moveList.add(Move.createPromotionCapture(row, col, toRow, toCol, pawn, capturedPiece, PieceType.QUEEN));
                     moveList.add(Move.createPromotionCapture(row, col, toRow, toCol, pawn, capturedPiece, PieceType.ROOK));
@@ -193,8 +193,8 @@ public class MoveGenerator {
     }
 
     private static void generateCastlingMoves(List<Move> moveList, Piece king, int row, int col, Piece[][] position, boolean[][] castlingRights) {
-        int colorIndex = (king.getColor() == Color.WHITE) ? 0 : 1;
-        Color opponentColor = (king.getColor() == Color.WHITE) ? Color.BLACK : Color.WHITE;
+        int colorIndex = (king.color() == Color.WHITE) ? 0 : 1;
+        Color opponentColor = (king.color() == Color.WHITE) ? Color.BLACK : Color.WHITE;
 
         // Kingside castling
         if (castlingRights[colorIndex][0]) {

@@ -108,7 +108,7 @@ public class BoardPanel extends JPanel implements MouseListener, MouseMotionList
             // Message box
             g2.setColor(Color.WHITE);
             g2.setFont(new Font("Arial", Font.BOLD, 32));
-            String msg = gameStatus.getGameStatus();
+            String msg = gameStatus.getGameStatusMessage();
             FontMetrics fm = g2.getFontMetrics();
             int msgWidth = fm.stringWidth(msg);
             int x = (getWidth() - msgWidth) / 2;
@@ -141,7 +141,7 @@ public class BoardPanel extends JPanel implements MouseListener, MouseMotionList
     }
 
     private Image getPieceImage(Piece piece) {
-        return pieceImages[piece.getColor().ordinal()][piece.getType().ordinal()];
+        return pieceImages[piece.color().ordinal()][piece.type().ordinal()];
     }
 
     public void resetBoard() {

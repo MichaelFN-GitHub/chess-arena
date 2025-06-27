@@ -6,7 +6,7 @@ public class GameStatus {
     private boolean isFiftyMoveRule;
     private boolean isInsufficientMaterial;
 
-    public String getGameStatus() {
+    public String getGameStatusMessage() {
         if (isCheckmate) return "Checkmate";
         if (isStalemate) return "Stalemate";
         if (isFiftyMoveRule || isInsufficientMaterial) return "Draw";

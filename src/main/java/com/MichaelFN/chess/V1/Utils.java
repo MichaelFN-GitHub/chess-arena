@@ -1,8 +1,5 @@
 package com.MichaelFN.chess.V1;
 
-import java.util.HashMap;
-import java.util.Map;
-
 public class Utils {
     public static final int[][] KNIGHT_JUMPS = {{-2,-1}, {-2,1}, {-1,-2}, {-1,2}, {1,-2}, {1,2}, {2,-1}, {2,1}};
     public static final int[][] KING_JUMPS = {{1,0}, {-1,0}, {0,1}, {0,-1}, {1,1}, {1,-1}, {-1,1}, {-1,-1}};
@@ -11,13 +8,13 @@ public class Utils {
 
     public static String pieceToString(Piece piece) {
         if (piece == null) return " ";
-        return switch (piece.getType()) {
-            case PAWN -> piece.getColor() == Color.WHITE ? "P" : "p";
-            case KNIGHT -> piece.getColor() == Color.WHITE ? "N" : "n";
-            case BISHOP -> piece.getColor() == Color.WHITE ? "B" : "b";
-            case ROOK -> piece.getColor() == Color.WHITE ? "R" : "r";
-            case QUEEN -> piece.getColor() == Color.WHITE ? "Q" : "q";
-            case KING -> piece.getColor() == Color.WHITE ? "K" : "k";
+        return switch (piece.type()) {
+            case PAWN -> piece.color() == Color.WHITE ? "P" : "p";
+            case KNIGHT -> piece.color() == Color.WHITE ? "N" : "n";
+            case BISHOP -> piece.color() == Color.WHITE ? "B" : "b";
+            case ROOK -> piece.color() == Color.WHITE ? "R" : "r";
+            case QUEEN -> piece.color() == Color.WHITE ? "Q" : "q";
+            case KING -> piece.color() == Color.WHITE ? "K" : "k";
         };
     }
 
@@ -75,7 +72,7 @@ public class Utils {
         for (int pawnCol : pawnCols) {
             if (inBounds(pawnRow, pawnCol)) {
                 Piece p = position[pawnRow][pawnCol];
-                if (p != null && p.getColor() == attackerColor && p.getType() == PieceType.PAWN) {
+                if (p != null && p.color() == attackerColor && p.type() == PieceType.PAWN) {
                     return true;
                 }
             }
@@ -87,7 +84,7 @@ public class Utils {
             int c = col + jump[1];
             if (inBounds(r, c)) {
                 Piece p = position[r][c];
-                if (p != null && p.getColor() == attackerColor && p.getType() == PieceType.KNIGHT) {
+                if (p != null && p.color() == attackerColor && p.type() == PieceType.KNIGHT) {
                     return true;
                 }
             }
@@ -99,7 +96,7 @@ public class Utils {
             int c = col + move[1];
             if (inBounds(r, c)) {
                 Piece p = position[r][c];
-                if (p != null && p.getColor() == attackerColor && p.getType() == PieceType.KING) {
+                if (p != null && p.color() == attackerColor && p.type() == PieceType.KING) {
                     return true;
                 }
             }
@@ -112,8 +109,8 @@ public class Utils {
             while (inBounds(r, c)) {
                 Piece p = position[r][c];
                 if (p != null) {
-                    if (p.getColor() == attackerColor &&
-                            (p.getType() == PieceType.ROOK || p.getType() == PieceType.QUEEN)) {
+                    if (p.color() == attackerColor &&
+                            (p.type() == PieceType.ROOK || p.type() == PieceType.QUEEN)) {
                         return true;
                     }
                     break;
@@ -130,8 +127,8 @@ public class Utils {
             while (inBounds(r, c)) {
                 Piece p = position[r][c];
                 if (p != null) {
-                    if (p.getColor() == attackerColor &&
-                            (p.getType() == PieceType.BISHOP || p.getType() == PieceType.QUEEN)) {
+                    if (p.color() == attackerColor &&
+                            (p.type() == PieceType.BISHOP || p.type() == PieceType.QUEEN)) {
                         return true;
                     }
                     break;
@@ -156,8 +153,8 @@ public class Utils {
         uci.append(fromSquare).append(toSquare);
 
         // Promotion
-        int lastRow = movedPiece.getColor() == Color.WHITE ? 0 : 7;
-        if (movedPiece.getType() == PieceType.PAWN && toRow == lastRow) {
+        int lastRow = movedPiece.color() == Color.WHITE ? 0 : 7;
+        if (movedPiece.type() == PieceType.PAWN && toRow == lastRow) {
 
             // Default to queen promotion
             uci.append('q');
@@ -176,7 +173,7 @@ public class Utils {
         uci.append(fromSquare).append(toSquare);
 
         if (move.isPromotion()) {
-            PieceType pieceType = move.getPromotionPiece().getType();
+            PieceType pieceType = move.getPromotionPiece().type();
             Piece piece = new Piece(pieceType, Color.BLACK);
             String pieceString = piece.toString();
             uci.append(pieceString);
@@ -208,7 +205,7 @@ public class Utils {
         // Promotion
         if (uciMove.length() == 5) {
             char promoChar = uciMove.charAt(4);
-            PieceType promoType = stringToPiece("" + promoChar).getType();
+            PieceType promoType = stringToPiece("" + promoChar).type();
 
             if (capturedPiece != null) {
                 return Move.createPromotionCapture(fromRow, fromCol, toRow, toCol, movedPiece, capturedPiece, promoType);
@@ -223,7 +220,7 @@ public class Utils {
         }
 
         // En passant
-        if (movedPiece.getType() == PieceType.PAWN && fromCol != toCol) {
+        if (movedPiece.type() == PieceType.PAWN && fromCol != toCol) {
             int[] enPassantSquare = boardState.getEnPassantSquare();
             if (enPassantSquare != null && enPassantSquare[0] == toRow && enPassantSquare[1] == toCol) {
                 return Move.createEnPassantCapture(fromRow, fromCol, toRow, toCol, movedPiece);
@@ -231,7 +228,7 @@ public class Utils {
         }
 
         // Castling
-        if (movedPiece.getType() == PieceType.KING && Math.abs(toCol - fromCol) == 2) {
+        if (movedPiece.type() == PieceType.KING && Math.abs(toCol - fromCol) == 2) {
             if (toCol > fromCol) {
                 return Move.createCastleKingSide(fromRow, fromCol, toRow, toCol, movedPiece);
             } else {

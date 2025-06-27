@@ -3,12 +3,12 @@ package com.MichaelFN.chess.V1;
 import java.util.Objects;
 
 public class Move {
-    private int fromRow;
-    private int fromCol;
-    private int toRow;
-    private int toCol;
+    private final int fromRow;
+    private final int fromCol;
+    private final int toRow;
+    private final int toCol;
 
-    private Piece movedPiece;
+    private final Piece movedPiece;
 
     private boolean isCapture;
     private Piece capturedPiece;
@@ -47,7 +47,7 @@ public class Move {
     public static Move createPromotionMove(int fromRow, int fromCol, int toRow, int toCol, Piece movedPiece, PieceType promotionPieceType) {
         Move move = createQuietMove(fromRow, fromCol, toRow, toCol, movedPiece);
         move.setPromotion(true);
-        move.setPromotionPiece(new Piece(promotionPieceType, movedPiece.getColor()));
+        move.setPromotionPiece(new Piece(promotionPieceType, movedPiece.color()));
         return move;
     }
 
@@ -59,7 +59,7 @@ public class Move {
     }
 
     public static Move createEnPassantCapture(int fromRow, int fromCol, int toRow, int toCol, Piece movedPiece) {
-        Piece capturedPiece = new Piece(PieceType.PAWN, movedPiece.getColor() == Color.WHITE ? Color.BLACK : Color.WHITE);
+        Piece capturedPiece = new Piece(PieceType.PAWN, movedPiece.color() == Color.WHITE ? Color.BLACK : Color.WHITE);
         Move move = createCapture(fromRow, fromCol, toRow, toCol, movedPiece, capturedPiece);
         move.setEnPassant(true);
         return move;
