@@ -8,7 +8,7 @@ import com.MichaelFN.chess.V1.MoveGenerator;
 import java.util.List;
 
 public class Negamax {
-    private Evaluator evaluator;
+    private final Evaluator evaluator;
 
     private int nodesSearched;
     private boolean isTimeUp;

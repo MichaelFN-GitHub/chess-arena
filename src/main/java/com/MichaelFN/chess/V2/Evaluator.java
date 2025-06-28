@@ -2,8 +2,6 @@ package com.MichaelFN.chess.V2;
 
 import com.MichaelFN.chess.V1.*;
 
-import java.util.HashMap;
-
 public class Evaluator {
     public static final int[] PIECE_VALUES = {10, 30, 35, 50, 90, 0};
 

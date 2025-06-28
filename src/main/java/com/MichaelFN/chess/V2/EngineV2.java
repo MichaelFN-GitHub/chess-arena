@@ -1,17 +1,10 @@
 package com.MichaelFN.chess.V2;
 
 import com.MichaelFN.chess.V1.EngineV1;
-import com.MichaelFN.chess.V1.MoveGenerator;
 
 public class EngineV2 extends EngineV1 {
-    private final Evaluator evaluator;
-    private final Negamax searcher;
-
-    public EngineV2() {
-        super();
-        this.evaluator = new Evaluator();
-        this.searcher = new Negamax(evaluator);
-    }
+    private final Evaluator evaluator = new Evaluator();
+    private final Negamax searcher = new Negamax(evaluator);
 
     @Override
     public void startSearch(long timeLimitMillis) {
