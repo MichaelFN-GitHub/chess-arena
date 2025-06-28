@@ -44,4 +44,9 @@ public class EngineV1 implements EngineInterface {
     public String getEngineName() {
         return "Random Move Engine";
     }
+
+    @Override
+    public String toString() {
+        return getEngineName();
+    }
 }

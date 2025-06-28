@@ -38,5 +38,7 @@ public interface EngineInterface {
      * Gets the name of the engine.
      */
     String getEngineName();
+
+    String toString();
 }
 

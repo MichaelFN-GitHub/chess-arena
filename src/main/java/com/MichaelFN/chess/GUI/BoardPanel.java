@@ -18,6 +18,8 @@ import java.util.Objects;
 public class BoardPanel extends JPanel implements MouseListener, MouseMotionListener {
     private static final int TILE_SIZE = 80;
     private static final int BOARD_SIZE = 8;
+
+    public static final EngineInterface[] ALL_ENGINES = {new EngineV1(), new EngineV2()};
     private static final int ENGINE_SEARCH_TIME_MS = 2000;
 
     private final BoardState boardState;
@@ -29,16 +31,13 @@ public class BoardPanel extends JPanel implements MouseListener, MouseMotionList
     private boolean dragging;
     private Piece draggedPiece;
 
-    private final EngineInterface whiteEngine;
-    private final EngineInterface blackEngine;
+    private EngineInterface whiteEngine = ALL_ENGINES[0];
+    private EngineInterface blackEngine = ALL_ENGINES[0];
 
     public BoardPanel(BoardState boardState) {
         this.boardState = boardState;
-        this.pieceImages = new Image[2][6];
         this.gameStatus = GameStatus.evaluateGameStatus(boardState);
-
-        this.whiteEngine = new EngineV1();
-        this.blackEngine = new EngineV2();
+        this.pieceImages = new Image[2][6];
 
         loadPieceImages();
 
@@ -180,6 +179,14 @@ public class BoardPanel extends JPanel implements MouseListener, MouseMotionList
             boardState.makeMove(move);
             gameStatus = GameStatus.evaluateGameStatus(boardState);
         }
+    }
+
+    public void setWhiteEngine(EngineInterface engine) {
+        this.whiteEngine = engine;
+    }
+
+    public void setBlackEngine(EngineInterface engine) {
+        this.blackEngine = engine;
     }
 
     @Override
