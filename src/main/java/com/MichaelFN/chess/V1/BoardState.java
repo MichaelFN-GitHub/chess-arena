@@ -43,44 +43,6 @@ public class BoardState {
         return false;
     }
 
-    public GameStatus evaluateGameStatus() {
-        GameStatus gameStatus = new GameStatus();
-
-        // No legal moves
-        List<Move> legalMoves = MoveGenerator.generateLegalMoves(this);
-        if (legalMoves.isEmpty()) {
-            int[] kingPosition = getKingPosition(playerToMove);
-            Color opponentColor = playerToMove == Color.WHITE ? Color.BLACK : Color.WHITE;
-            if (Utils.isSquareAttacked(kingPosition, position, opponentColor)) {
-
-                // Checkmate
-                gameStatus.setCheckmate(true);
-            } else {
-
-                // Stalemate
-                gameStatus.setStalemate(true);
-            }
-        }
-
-        // Halfmove rule
-        if (halfmoveClock >= 50) gameStatus.setFiftyMoveRule(true);
-
-        // Insufficient material (should take more scenarios into account than only kings)
-        boolean onlyKings = true;
-        for (int i = 0; i < 8; i++) {
-            for (int j = 0; j < 8; j++) {
-                Piece piece = position[i][j];
-                if (piece != null && piece.type() != PieceType.KING) {
-                    onlyKings = false;
-                    break;
-                }
-            }
-        }
-        gameStatus.setInsufficientMaterial(onlyKings);
-
-        return gameStatus;
-    }
-
     public void makeMove(Move move) {
         int fromRow = move.getFromRow();
         int fromCol = move.getFromCol();

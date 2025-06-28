@@ -21,17 +21,22 @@ public interface EngineInterface {
     void setPosition(String FEN);
 
     /**
-     * Starts the search for the best move from the current position.
+     * Starts the search for the move from the current position.
      *
      * @param timeLimitMillis Time allowed for the search in milliseconds.
      */
     void startSearch(long timeLimitMillis);
 
     /**
-     * Gets the best move found by the engine after a search.
+     * Gets the move found by the engine after a search.
      *
-     * @return The best move in UCI notation.
+     * @return The move in UCI notation.
      */
-    String getBestMove();
+    String getMove();
+
+    /**
+     * Gets the name of the engine.
+     */
+    String getEngineName();
 }
 

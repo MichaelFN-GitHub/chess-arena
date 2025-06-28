@@ -1,6 +1,8 @@
 package com.MichaelFN.chess.GUI;
 
+import com.MichaelFN.chess.Interfaces.EngineInterface;
 import com.MichaelFN.chess.V1.*;
+import com.MichaelFN.chess.V2.EngineV2;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -19,7 +21,6 @@ public class BoardPanel extends JPanel implements MouseListener, MouseMotionList
     private static final int ENGINE_SEARCH_TIME_MS = 1000;
 
     private final BoardState boardState;
-    private final EngineV1 V1;
     private final Image[][] pieceImages;
     private GameStatus gameStatus;
 
@@ -28,13 +29,17 @@ public class BoardPanel extends JPanel implements MouseListener, MouseMotionList
     private boolean dragging;
     private Piece draggedPiece;
 
+    private final EngineV1 v1;
+    private final EngineV2 v2;
+
     public BoardPanel(BoardState boardState) {
         this.boardState = boardState;
-        this.V1 = new EngineV1();
         this.pieceImages = new Image[2][6];
-        this.gameStatus = boardState.evaluateGameStatus();
+        this.gameStatus = GameStatus.evaluateGameStatus(boardState);
 
-        V1.initialize();
+        this.v1 = new EngineV1();
+        this.v2 = new EngineV2();
+
         loadPieceImages();
 
         addMouseListener(this);
@@ -98,26 +103,25 @@ public class BoardPanel extends JPanel implements MouseListener, MouseMotionList
     }
 
     public void drawGameStatus(Graphics g) {
-        if (gameStatus.isGameOver()) {
-            Graphics2D g2 = (Graphics2D) g.create();
+        Graphics2D g2 = (Graphics2D) g.create();
 
-            // Semi-transparent dark overlay
-            g2.setColor(new Color(0, 0, 0, 150));
-            g2.fillRect(0, 0, getWidth(), getHeight());
+        // Semi-transparent dark overlay
+        g2.setColor(new Color(0, 0, 0, 150));
+        g2.fillRect(0, 0, getWidth(), getHeight());
 
-            // Message box
-            g2.setColor(Color.WHITE);
-            g2.setFont(new Font("Arial", Font.BOLD, 32));
-            String msg = gameStatus.getGameStatusMessage();
-            FontMetrics fm = g2.getFontMetrics();
-            int msgWidth = fm.stringWidth(msg);
-            int x = (getWidth() - msgWidth) / 2;
-            int y = getHeight() / 2;
+        // Message box
+        g2.setColor(Color.WHITE);
+        g2.setFont(new Font("Arial", Font.BOLD, 32));
+        String msg = gameStatus.getGameStatusMessage();
+        FontMetrics fm = g2.getFontMetrics();
+        int msgWidth = fm.stringWidth(msg);
+        int x = (getWidth() - msgWidth) / 2;
+        int y = getHeight() / 2;
 
-            g2.drawString(msg, x, y);
+        g2.drawString(msg, x, y);
+        g2.dispose();
 
-            g2.dispose();
-        }
+        System.out.println("Winner: " + gameStatus.getWinnerString());
     }
 
     @Override
@@ -146,22 +150,24 @@ public class BoardPanel extends JPanel implements MouseListener, MouseMotionList
 
     public void resetBoard() {
         boardState.reset();
-        gameStatus = boardState.evaluateGameStatus();
+        gameStatus = GameStatus.evaluateGameStatus(boardState);
         repaint();
     }
 
     public void unmakeMove() {
         boardState.unmakeMove();
-        gameStatus = boardState.evaluateGameStatus();
+        gameStatus = GameStatus.evaluateGameStatus(boardState);
         repaint();
     }
 
     public void makeEngineMove() {
         if (gameStatus.isGameOver()) return;
 
-        V1.setPosition(boardState.generateFenString());
-        V1.startSearch(ENGINE_SEARCH_TIME_MS);
-        String uciMove = V1.getBestMove();
+        EngineInterface engine = boardState.getPlayerToMove() == com.MichaelFN.chess.V1.Color.WHITE ? v1 : v2;
+
+        engine.setPosition(boardState.generateFenString());
+        engine.startSearch(ENGINE_SEARCH_TIME_MS);
+        String uciMove = engine.getMove();
         Move move = Utils.uciToMove(uciMove, boardState);
         makeMoveIfLegal(move);
         repaint();
@@ -172,7 +178,7 @@ public class BoardPanel extends JPanel implements MouseListener, MouseMotionList
 
         if (boardState.isLegalMove(move)) {
             boardState.makeMove(move);
-            gameStatus = boardState.evaluateGameStatus();
+            gameStatus = GameStatus.evaluateGameStatus(boardState);
         }
     }
 
