@@ -8,21 +8,17 @@ public class MoveGenerator {
     public static List<Move> generateLegalMoves(BoardState boardState) {
         List<Move> legalMoves = new ArrayList<>();
 
-        Piece[][] position = boardState.getPosition();
-        Color playerToMove = boardState.getPlayerToMove();
-        Color opponentColor = (playerToMove == Color.WHITE) ? Color.BLACK : Color.WHITE;
-
-        // Make every pseudo legal move and check if king is attacked
         List<Move> pseudoLegalMoves = generatePseudoLegalMoves(boardState);
         for (Move move : pseudoLegalMoves) {
-            boardState.makeMove(move);
-            int[] kingPosition = boardState.getKingPosition(playerToMove);
-            if (!Utils.isSquareAttacked(kingPosition, position, opponentColor)) {
-                legalMoves.add(move);
-            }
-            boardState.unmakeMove();
+            if (boardState.isLegalMove(move)) legalMoves.add(move);
         }
 
+        return legalMoves;
+    }
+
+    public static List<Move> generateCaptures(BoardState boardState) {
+        List<Move> legalMoves = generateLegalMoves(boardState);
+        legalMoves.removeIf(move -> !move.isCapture());
         return legalMoves;
     }
 

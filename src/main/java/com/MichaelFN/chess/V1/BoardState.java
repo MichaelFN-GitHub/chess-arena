@@ -36,9 +36,16 @@ public class BoardState {
     }
 
     public boolean isLegalMove(Move move) {
-        List<Move> legalMoves = MoveGenerator.generateLegalMoves(this);
-        for (Move legalMove : legalMoves) {
-            if (move.equals(legalMove)) return true;
+        int colorIndex = playerToMove.ordinal();
+        makeMove(move);
+        boolean kingInCheck = Utils.isSquareAttacked(kingPositions[colorIndex], position, playerToMove);
+        unmakeMove();
+        return !kingInCheck;
+    }
+
+    boolean hasLegalMove() {
+        for (Move move : MoveGenerator.generatePseudoLegalMoves(this)) {
+            if (isLegalMove(move)) return true;
         }
         return false;
     }

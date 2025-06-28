@@ -183,7 +183,7 @@ public class Utils {
     }
 
     public static Move uciToMove(String uciMove, BoardState boardState) {
-        if (uciMove.length() < 4) {
+        if (uciMove.length() < 4 || uciMove.equals("0000")) {
             throw new IllegalArgumentException("Invalid UCI move: " + uciMove);
         }
 

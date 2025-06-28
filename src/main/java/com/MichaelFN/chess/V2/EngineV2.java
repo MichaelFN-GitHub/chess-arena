@@ -4,12 +4,20 @@ import com.MichaelFN.chess.V1.EngineV1;
 import com.MichaelFN.chess.V1.MoveGenerator;
 
 public class EngineV2 extends EngineV1 {
+    private final Evaluator evaluator;
+    private final Negamax searcher;
+
+    public EngineV2() {
+        super();
+        this.evaluator = new Evaluator();
+        this.searcher = new Negamax(evaluator);
+    }
 
     @Override
     public void startSearch(long timeLimitMillis) {
-        nextMove = MoveGenerator.generateLegalMoves(boardState).getFirst();
-
-        // Implement minimax with simple evaluator
+        System.out.println(getEngineName() + ": Search started...");
+        nextMove = searcher.findBestMove(boardState, 100, timeLimitMillis);
+        System.out.println(getEngineName() + ": Done searching.");
     }
 
     @Override

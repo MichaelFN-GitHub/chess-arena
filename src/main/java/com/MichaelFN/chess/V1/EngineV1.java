@@ -32,7 +32,7 @@ public class EngineV1 implements EngineInterface {
         List<Move> moves = MoveGenerator.generateLegalMoves(boardState);
         Collections.shuffle(moves);
         nextMove = moves.getFirst();
-        System.out.println(getEngineName() + ": Search stopped.");
+        System.out.println(getEngineName() + ": Done searching.");
     }
 
     @Override

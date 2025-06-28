@@ -18,7 +18,7 @@ import java.util.Objects;
 public class BoardPanel extends JPanel implements MouseListener, MouseMotionListener {
     private static final int TILE_SIZE = 80;
     private static final int BOARD_SIZE = 8;
-    private static final int ENGINE_SEARCH_TIME_MS = 1000;
+    private static final int ENGINE_SEARCH_TIME_MS = 2000;
 
     private final BoardState boardState;
     private final Image[][] pieceImages;
@@ -29,16 +29,16 @@ public class BoardPanel extends JPanel implements MouseListener, MouseMotionList
     private boolean dragging;
     private Piece draggedPiece;
 
-    private final EngineV1 v1;
-    private final EngineV2 v2;
+    private final EngineInterface whiteEngine;
+    private final EngineInterface blackEngine;
 
     public BoardPanel(BoardState boardState) {
         this.boardState = boardState;
         this.pieceImages = new Image[2][6];
         this.gameStatus = GameStatus.evaluateGameStatus(boardState);
 
-        this.v1 = new EngineV1();
-        this.v2 = new EngineV2();
+        this.whiteEngine = new EngineV1();
+        this.blackEngine = new EngineV2();
 
         loadPieceImages();
 
@@ -163,7 +163,7 @@ public class BoardPanel extends JPanel implements MouseListener, MouseMotionList
     public void makeEngineMove() {
         if (gameStatus.isGameOver()) return;
 
-        EngineInterface engine = boardState.getPlayerToMove() == com.MichaelFN.chess.V1.Color.WHITE ? v1 : v2;
+        EngineInterface engine = boardState.getPlayerToMove() == com.MichaelFN.chess.V1.Color.WHITE ? whiteEngine : blackEngine;
 
         engine.setPosition(boardState.generateFenString());
         engine.startSearch(ENGINE_SEARCH_TIME_MS);
@@ -176,7 +176,7 @@ public class BoardPanel extends JPanel implements MouseListener, MouseMotionList
     private void makeMoveIfLegal(Move move) {
         if (gameStatus.isGameOver()) return;
 
-        if (boardState.isLegalMove(move)) {
+        if (MoveGenerator.generateLegalMoves(boardState).contains(move)) {
             boardState.makeMove(move);
             gameStatus = GameStatus.evaluateGameStatus(boardState);
         }

@@ -17,8 +17,7 @@ public class GameStatus {
         Piece[][] position = boardState.getPosition();
 
         // No legal moves
-        List<Move> legalMoves = MoveGenerator.generateLegalMoves(boardState);
-        if (legalMoves.isEmpty()) {
+        if (!boardState.hasLegalMove()) {
             int[] kingPosition = boardState.getKingPosition(playerToMove);
             Color opponentColor = playerToMove == Color.WHITE ? Color.BLACK : Color.WHITE;
             if (Utils.isSquareAttacked(kingPosition, position, opponentColor)) {
