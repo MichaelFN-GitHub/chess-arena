@@ -1,6 +1,6 @@
 package V1;
 
-import com.MichaelFN.chess.V1.BoardState;
+import com.MichaelFN.chess.v1.BoardState;
 import org.junit.Test;
 
 import java.io.BufferedReader;

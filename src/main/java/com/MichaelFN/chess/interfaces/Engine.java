@@ -1,10 +1,10 @@
-package com.MichaelFN.chess.Interfaces;
+package com.MichaelFN.chess.interfaces;
 
 /**
  * Defines the core methods for a chess engine interface.
  * This interface abstracts the communication and control layer between the engine logic and the GUI.
  */
-public interface EngineInterface {
+public interface Engine {
 
     /**
      * Initialize or reset the engine state.

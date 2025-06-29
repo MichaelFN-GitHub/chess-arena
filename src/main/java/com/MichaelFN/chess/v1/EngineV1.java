@@ -1,11 +1,11 @@
-package com.MichaelFN.chess.V1;
+package com.MichaelFN.chess.v1;
 
-import com.MichaelFN.chess.Interfaces.EngineInterface;
+import com.MichaelFN.chess.interfaces.Engine;
 
 import java.util.Collections;
 import java.util.List;
 
-public class EngineV1 implements EngineInterface {
+public class EngineV1 implements Engine {
     protected BoardState boardState;
     protected Move nextMove;
 

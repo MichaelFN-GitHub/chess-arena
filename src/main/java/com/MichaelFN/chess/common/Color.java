@@ -1,4 +1,4 @@
-package com.MichaelFN.chess.V1;
+package com.MichaelFN.chess.common;
 
 public enum Color {
     WHITE, BLACK

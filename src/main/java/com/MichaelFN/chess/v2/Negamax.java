@@ -1,8 +1,8 @@
-package com.MichaelFN.chess.V2;
+package com.MichaelFN.chess.v2;
 
-import com.MichaelFN.chess.V1.BoardState;
-import com.MichaelFN.chess.V1.Move;
-import com.MichaelFN.chess.V1.MoveGenerator;
+import com.MichaelFN.chess.v1.BoardState;
+import com.MichaelFN.chess.v1.Move;
+import com.MichaelFN.chess.v1.MoveGenerator;
 
 import java.util.List;
 

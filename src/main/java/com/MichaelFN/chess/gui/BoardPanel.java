@@ -1,8 +1,8 @@
-package com.MichaelFN.chess.GUI;
+package com.MichaelFN.chess.gui;
 
-import com.MichaelFN.chess.Interfaces.EngineInterface;
-import com.MichaelFN.chess.V1.*;
-import com.MichaelFN.chess.V2.EngineV2;
+import com.MichaelFN.chess.interfaces.Engine;
+import com.MichaelFN.chess.v1.*;
+import com.MichaelFN.chess.v2.EngineV2;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -19,7 +19,7 @@ public class BoardPanel extends JPanel implements MouseListener, MouseMotionList
     private static final int TILE_SIZE = 80;
     private static final int BOARD_SIZE = 8;
 
-    public static final EngineInterface[] ALL_ENGINES = {new EngineV1(), new EngineV2()};
+    public static final Engine[] ALL_ENGINES = {new EngineV1(), new EngineV2()};
     private static final int ENGINE_SEARCH_TIME_MS = 2000;
 
     private final BoardState boardState;
@@ -30,8 +30,8 @@ public class BoardPanel extends JPanel implements MouseListener, MouseMotionList
     private boolean dragging;
     private Piece draggedPiece;
 
-    private EngineInterface whiteEngine = ALL_ENGINES[0];
-    private EngineInterface blackEngine = ALL_ENGINES[0];
+    private Engine whiteEngine = ALL_ENGINES[0];
+    private Engine blackEngine = ALL_ENGINES[0];
 
     public BoardPanel(BoardState boardState) {
         this.boardState = boardState;
@@ -159,7 +159,7 @@ public class BoardPanel extends JPanel implements MouseListener, MouseMotionList
     public void makeEngineMove() {
         if (boardState.isGameOver()) return;
 
-        EngineInterface engine = boardState.getPlayerToMove() == com.MichaelFN.chess.V1.Color.WHITE ? whiteEngine : blackEngine;
+        Engine engine = boardState.getPlayerToMove() == com.MichaelFN.chess.common.Color.WHITE ? whiteEngine : blackEngine;
 
         engine.setPosition(boardState.generateFenString());
         engine.startSearch(ENGINE_SEARCH_TIME_MS);
@@ -177,11 +177,11 @@ public class BoardPanel extends JPanel implements MouseListener, MouseMotionList
         }
     }
 
-    public void setWhiteEngine(EngineInterface engine) {
+    public void setWhiteEngine(Engine engine) {
         this.whiteEngine = engine;
     }
 
-    public void setBlackEngine(EngineInterface engine) {
+    public void setBlackEngine(Engine engine) {
         this.blackEngine = engine;
     }
 

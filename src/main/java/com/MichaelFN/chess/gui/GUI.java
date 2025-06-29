@@ -1,6 +1,6 @@
-package com.MichaelFN.chess.GUI;
+package com.MichaelFN.chess.gui;
 
-import com.MichaelFN.chess.V1.BoardState;
+import com.MichaelFN.chess.v1.BoardState;
 
 import javax.swing.*;
 import java.awt.*;

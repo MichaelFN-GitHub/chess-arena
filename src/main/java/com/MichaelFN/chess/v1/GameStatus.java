@@ -1,4 +1,6 @@
-package com.MichaelFN.chess.V1;
+package com.MichaelFN.chess.v1;
+
+import com.MichaelFN.chess.common.Color;
 
 public class GameStatus {
     private final BoardState boardState;

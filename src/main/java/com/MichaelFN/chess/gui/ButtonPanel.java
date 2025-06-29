@@ -1,6 +1,6 @@
-package com.MichaelFN.chess.GUI;
+package com.MichaelFN.chess.gui;
 
-import com.MichaelFN.chess.Interfaces.EngineInterface;
+import com.MichaelFN.chess.interfaces.Engine;
 
 import javax.swing.*;
 import java.awt.*;
@@ -22,17 +22,17 @@ public class ButtonPanel extends JPanel {
 
 
         // Dropdown
-        JComboBox<EngineInterface> whiteEngineDropdown = new JComboBox<>(BoardPanel.ALL_ENGINES);
+        JComboBox<Engine> whiteEngineDropdown = new JComboBox<>(BoardPanel.ALL_ENGINES);
         styleDropdown(whiteEngineDropdown);
         whiteEngineDropdown.addActionListener(e -> {
-            EngineInterface selectedEngine = (EngineInterface) whiteEngineDropdown.getSelectedItem();
+            Engine selectedEngine = (Engine) whiteEngineDropdown.getSelectedItem();
             boardPanel.setWhiteEngine(selectedEngine);
         });
 
-        JComboBox<EngineInterface> blackEngineDropdown = new JComboBox<>(BoardPanel.ALL_ENGINES);
+        JComboBox<Engine> blackEngineDropdown = new JComboBox<>(BoardPanel.ALL_ENGINES);
         styleDropdown(blackEngineDropdown);
         blackEngineDropdown.addActionListener(e -> {
-            EngineInterface selectedEngine = (EngineInterface) blackEngineDropdown.getSelectedItem();
+            Engine selectedEngine = (Engine) blackEngineDropdown.getSelectedItem();
             boardPanel.setBlackEngine(selectedEngine);
         });
 
@@ -69,7 +69,7 @@ public class ButtonPanel extends JPanel {
         return button;
     }
 
-    private void styleDropdown(JComboBox<EngineInterface> comboBox) {
+    private void styleDropdown(JComboBox<Engine> comboBox) {
         comboBox.setAlignmentX(Component.CENTER_ALIGNMENT);
         comboBox.setMaximumSize(new Dimension(160, 30));
         comboBox.setPreferredSize(new Dimension(160, 30));

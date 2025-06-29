@@ -1,4 +1,7 @@
-package com.MichaelFN.chess.V1;
+package com.MichaelFN.chess.v1;
+
+import com.MichaelFN.chess.common.Color;
+import com.MichaelFN.chess.common.PieceType;
 
 public class Utils {
     public static final int[][] KNIGHT_JUMPS = {{-2,-1}, {-2,1}, {-1,-2}, {-1,2}, {1,-2}, {1,2}, {2,-1}, {2,1}};

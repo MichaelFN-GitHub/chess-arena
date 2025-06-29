@@ -1,4 +1,7 @@
-package com.MichaelFN.chess.V1;
+package com.MichaelFN.chess.v1;
+
+import com.MichaelFN.chess.common.Color;
+import com.MichaelFN.chess.common.PieceType;
 
 public record Piece(PieceType type, Color color) {
 

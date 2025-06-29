@@ -1,8 +1,7 @@
 package com.MichaelFN.chess;
 
-import com.MichaelFN.chess.GUI.GUI;
-import com.MichaelFN.chess.V1.*;
-import com.MichaelFN.chess.V2.EngineV2;
+import com.MichaelFN.chess.gui.GUI;
+import com.MichaelFN.chess.v1.*;
 
 import javax.swing.*;
 

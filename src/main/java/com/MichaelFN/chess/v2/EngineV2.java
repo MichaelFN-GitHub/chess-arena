@@ -1,6 +1,6 @@
-package com.MichaelFN.chess.V2;
+package com.MichaelFN.chess.v2;
 
-import com.MichaelFN.chess.V1.EngineV1;
+import com.MichaelFN.chess.v1.EngineV1;
 
 public class EngineV2 extends EngineV1 {
     private final Evaluator evaluator = new Evaluator();
