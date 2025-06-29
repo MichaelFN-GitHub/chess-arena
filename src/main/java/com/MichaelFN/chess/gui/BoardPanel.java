@@ -3,6 +3,7 @@ package com.MichaelFN.chess.gui;
 import com.MichaelFN.chess.interfaces.Engine;
 import com.MichaelFN.chess.v1.*;
 import com.MichaelFN.chess.v2.EngineV2;
+import com.MichaelFN.chess.v3.EngineV3;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -14,12 +15,13 @@ import java.awt.event.MouseMotionListener;
 import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
+import java.util.Stack;
 
 public class BoardPanel extends JPanel implements MouseListener, MouseMotionListener {
     private static final int TILE_SIZE = 80;
     private static final int BOARD_SIZE = 8;
 
-    public static final Engine[] ALL_ENGINES = {new EngineV1(), new EngineV2()};
+    public static final Engine[] ALL_ENGINES = {new EngineV1(), new EngineV2(), new EngineV3()};
     private static final int ENGINE_SEARCH_TIME_MS = 2000;
 
     private final BoardState boardState;
@@ -33,9 +35,14 @@ public class BoardPanel extends JPanel implements MouseListener, MouseMotionList
     private Engine whiteEngine = ALL_ENGINES[0];
     private Engine blackEngine = ALL_ENGINES[0];
 
+    private String FEN;
+    private Stack<String> moveHistory;
+
     public BoardPanel(BoardState boardState) {
         this.boardState = boardState;
         this.pieceImages = new Image[2][6];
+        this.FEN = boardState.generateFenString();
+        this.moveHistory = new Stack<>();
 
         loadPieceImages();
 
@@ -153,6 +160,7 @@ public class BoardPanel extends JPanel implements MouseListener, MouseMotionList
 
     public void unmakeMove() {
         boardState.unmakeMove();
+        moveHistory.pop();
         repaint();
     }
 
@@ -161,7 +169,7 @@ public class BoardPanel extends JPanel implements MouseListener, MouseMotionList
 
         Engine engine = boardState.getPlayerToMove() == com.MichaelFN.chess.v1.Color.WHITE ? whiteEngine : blackEngine;
 
-        engine.setPosition(boardState.generateFenString());
+        engine.setPosition(FEN, moveHistory);
         engine.startSearch(ENGINE_SEARCH_TIME_MS);
         String uciMove = engine.getMove();
         Move move = Utils.uciToMove(uciMove, boardState);
@@ -174,6 +182,7 @@ public class BoardPanel extends JPanel implements MouseListener, MouseMotionList
 
         if (MoveGenerator.generateLegalMoves(boardState).contains(move)) {
             boardState.makeMove(move);
+            moveHistory.push(Utils.moveToUci(move));
         }
     }
 

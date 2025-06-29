@@ -1,5 +1,7 @@
 package com.MichaelFN.chess.interfaces;
 
+import java.util.Stack;
+
 /**
  * Defines the core methods for a chess engine interface.
  * This interface abstracts the communication and control layer between the engine logic and the GUI.
@@ -17,8 +19,9 @@ public interface Engine {
      * The position can be specified as a FEN string or as moves from the start position.
      *
      * @param FEN specified position in FEN format.
+     * @param moves moves made from initial position in UCI format (so that engine can reconstruct position)
      */
-    void setPosition(String FEN);
+    void setPosition(String FEN, Stack<String> moves);
 
     /**
      * Starts the search for the move from the current position.

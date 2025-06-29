@@ -1,10 +1,13 @@
 package com.MichaelFN.chess.v1;
 
+import java.util.HashMap;
+
 public class GameStatus {
     private final BoardState boardState;
 
     private boolean isCheckmate;
     private boolean isStalemate;
+    private boolean isRepetition;
     private boolean isFiftyMoveRule;
     private boolean isInsufficientMaterial;
 
@@ -33,6 +36,12 @@ public class GameStatus {
             return;
         }
 
+        // Threefold repetition
+        if (boardState.checkRepetition()) {
+            isRepetition = true;
+            return;
+        }
+
         // Halfmove rule
         if (boardState.getHalfmoveClock() >= 50) {
             isFiftyMoveRule = true;
@@ -46,6 +55,7 @@ public class GameStatus {
     public void reset() {
         isCheckmate = false;
         isStalemate = false;
+        isRepetition = false;
         isFiftyMoveRule = false;
         isInsufficientMaterial = false;
         winner = null;
@@ -54,7 +64,7 @@ public class GameStatus {
     public String getGameStatusMessage() {
         if (isCheckmate) return "Checkmate";
         if (isStalemate) return "Stalemate";
-        if (isFiftyMoveRule || isInsufficientMaterial) return "Draw";
+        if (isRepetition || isFiftyMoveRule || isInsufficientMaterial) return "Draw";
         return "Ongoing";
     }
 
@@ -68,6 +78,6 @@ public class GameStatus {
     }
 
     public boolean isGameOver() {
-        return isCheckmate || isStalemate || isFiftyMoveRule || isInsufficientMaterial;
+        return isCheckmate || isStalemate || isRepetition || isFiftyMoveRule || isInsufficientMaterial;
     }
 }

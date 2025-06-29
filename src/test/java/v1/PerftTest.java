@@ -1,4 +1,4 @@
-package V1;
+package v1;
 
 import com.MichaelFN.chess.v1.BoardState;
 import com.MichaelFN.chess.v1.Move;

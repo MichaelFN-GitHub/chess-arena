@@ -1,5 +1,6 @@
 package com.MichaelFN.chess.v2;
 
+import com.MichaelFN.chess.interfaces.NormalEvaluator;
 import com.MichaelFN.chess.v1.BoardState;
 import com.MichaelFN.chess.v1.Move;
 import com.MichaelFN.chess.v1.MoveGenerator;
@@ -7,12 +8,12 @@ import com.MichaelFN.chess.v1.MoveGenerator;
 import java.util.List;
 
 public class Negamax {
-    private final Evaluator evaluator;
+    private final NormalEvaluator evaluator;
 
     private int nodesSearched;
     private boolean isTimeUp;
 
-    public Negamax(Evaluator evaluator) {
+    public Negamax(NormalEvaluator evaluator) {
         this.evaluator = evaluator;
     }
 
@@ -20,6 +21,7 @@ public class Negamax {
         nodesSearched = 0;
         isTimeUp = false;
         Move bestMove = null;
+        int bestScore = Integer.MIN_VALUE;
 
         long startTime = System.currentTimeMillis();
         long endTime = startTime + time;
@@ -39,7 +41,7 @@ public class Negamax {
             // Try all legal moves at this depth
             for (Move move : legalMoves) {
                 boardState.makeMove(move);
-                int score = -negamax(boardState, depth, alpha, beta, endTime);
+                int score = -negamax(boardState, depth - 1, alpha, beta, endTime);
                 boardState.unmakeMove();
 
                 if (isTimeUp) break;
@@ -51,12 +53,14 @@ public class Negamax {
             }
 
             if (isTimeUp) break;
+            bestScore = bestScoreThisDepth;
             bestMove = bestMoveThisDepth;
-            System.out.println("Depth " + depth + " searched. Current best move + bestMove");
+            System.out.println("Depth " + depth + " searched. Current best move: " + bestMove);
         }
 
         System.out.println("Nodes searched: " + nodesSearched);
         System.out.println("Time used: " + (System.currentTimeMillis() - startTime));
+        System.out.println("Best score: " + bestScore);
         return bestMove;
     }
 
@@ -125,9 +129,13 @@ public class Negamax {
 
         nodesSearched++;
 
+        // Evaluate the position without making any further captures ("stand pat").
+        // This serves as the baseline score if we choose to do nothing.
+        // Helps prune bad capture sequences and avoid horizon effect.
+        // The horizon effect: Engine can't spot imminent threat because search has been stopped just before.
         int standPat = evaluator.evaluate(boardState);
 
-        if (standPat >= beta) return beta;
+        if (standPat >= beta) return beta;     // Fail-hard beta cutoff
         if (standPat > alpha) alpha = standPat;
 
         // Generate and order all legal captures

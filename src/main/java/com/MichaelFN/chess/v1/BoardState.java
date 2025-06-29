@@ -1,17 +1,20 @@
 package com.MichaelFN.chess.v1;
 
+import java.util.HashMap;
 import java.util.Stack;
 
 public class BoardState {
     private final BoardInitializer boardInitializer;
 
-    // Chess rule variables
+    // Variables used for chess rules
     private Piece[][] position;
     private Color playerToMove;
     private boolean[][] castlingRights;
     private int[] enPassantSquare;
     private int halfmoveClock;
     private int fullmoveNumber;
+    private long key;
+    private HashMap<Long, Integer> repetitionCounts;
     private GameStatus gameStatus;
 
     // History variables
@@ -20,6 +23,7 @@ public class BoardState {
     private final Stack<int[]> enPassantSquareHistory;
     private final Stack<Integer> halfmoveClockHistory;
     private final Stack<Integer> fullmoveNumberHistory;
+    private final Stack<Long> repetitionHistory;
 
     // Helpers
     private int[][] kingPositions;
@@ -34,6 +38,7 @@ public class BoardState {
         this.enPassantSquareHistory = new Stack<>();
         this.halfmoveClockHistory = new Stack<>();
         this.fullmoveNumberHistory = new Stack<>();
+        this.repetitionHistory = new Stack<>();
 
         reset();
     }
@@ -70,6 +75,7 @@ public class BoardState {
         enPassantSquareHistory.push(enPassantSquare == null ? null : new int[]{enPassantSquare[0], enPassantSquare[1]});
         halfmoveClockHistory.push(halfmoveClock);
         fullmoveNumberHistory.push(fullmoveNumber);
+        repetitionHistory.push(key);
 
         // Move piece
         position[fromRow][fromCol] = null;
@@ -151,6 +157,9 @@ public class BoardState {
         if (movedPiece.color() == Color.BLACK) fullmoveNumber++;
 
         playerToMove = playerToMove == Color.WHITE ? Color.BLACK : Color.WHITE;
+
+        key = Zobrist.computeHash(this);
+        repetitionCounts.put(key, repetitionCounts.getOrDefault(key, 0) + 1);
     }
 
     public void unmakeMove() {
@@ -205,10 +214,12 @@ public class BoardState {
         if (move.isCapture()) remainingPieces++;
 
         // Update history
+        repetitionCounts.put(key, repetitionCounts.get(key) - 1);
         castlingRights = castlingRightsHistory.pop();
         enPassantSquare = enPassantSquareHistory.pop();
         halfmoveClock = halfmoveClockHistory.pop();
         fullmoveNumber = fullmoveNumberHistory.pop();
+        key = repetitionHistory.pop();
 
         playerToMove = playerToMove == Color.WHITE ? Color.BLACK : Color.WHITE;
 
@@ -289,6 +300,10 @@ public class BoardState {
         return gameStatus.isCheckmate();
     }
 
+    public boolean checkRepetition() {
+        return repetitionCounts.getOrDefault(key, 0) >= 3;
+    }
+
     public GameStatus getGameStatus() {
         return gameStatus;
     }
@@ -363,5 +378,21 @@ public class BoardState {
 
     public int getRemainingPieces() {
         return remainingPieces;
+    }
+
+    public void setKey(long key) {
+        this.key = key;
+    }
+
+    public long getKey() {
+        return key;
+    }
+
+    public HashMap<Long, Integer> getRepetitionCounts() {
+        return repetitionCounts;
+    }
+
+    public void setRepetitionCounts(HashMap<Long, Integer> repetitionCounts) {
+        this.repetitionCounts = repetitionCounts;
     }
 }

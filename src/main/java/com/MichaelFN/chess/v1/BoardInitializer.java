@@ -1,5 +1,7 @@
 package com.MichaelFN.chess.v1;
 
+import java.util.HashMap;
+
 public class BoardInitializer {
     public static final String[][] POSITION_STRING = {
             {"r", "n", "b", "q", "k", "b", "n", "r"},
@@ -68,6 +70,10 @@ public class BoardInitializer {
         boardState.setEnPassantSquare(Utils.squareStringToCoords(fenSections[3]));
         boardState.setHalfmoveClock(Integer.parseInt(fenSections[4]));
         boardState.setFullmoveNumber(Integer.parseInt(fenSections[5]));
+
+        long zobristKey = Zobrist.computeHash(boardState);
+        boardState.setKey(zobristKey);
+        boardState.setRepetitionCounts(new HashMap<>(){{ put(zobristKey, 1); }});
     }
 
     public void initializeFromStringArray(String[][] stringArray) {
@@ -95,5 +101,9 @@ public class BoardInitializer {
         boardState.setEnPassantSquare(null);
         boardState.setHalfmoveClock(0);
         boardState.setFullmoveNumber(0);
+
+        long zobristKey = Zobrist.computeHash(boardState);
+        boardState.setKey(zobristKey);
+        boardState.setRepetitionCounts(new HashMap<>(){{ put(zobristKey, 1); }});
     }
 }

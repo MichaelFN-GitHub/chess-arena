@@ -4,6 +4,7 @@ import com.MichaelFN.chess.interfaces.Engine;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Stack;
 
 public class EngineV1 implements Engine {
     protected BoardState boardState;
@@ -20,8 +21,11 @@ public class EngineV1 implements Engine {
     }
 
     @Override
-    public void setPosition(String FEN) {
+    public void setPosition(String FEN, Stack<String> uciMoves) {
         boardState.parseFEN(FEN);
+        for (String move : uciMoves) {
+            boardState.makeMove(Utils.uciToMove(move, boardState));
+        }
         System.out.println(getEngineName() + ": Position has been set.");
     }
 
