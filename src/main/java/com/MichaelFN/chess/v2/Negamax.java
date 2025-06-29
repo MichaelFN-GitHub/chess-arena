@@ -9,7 +9,7 @@ import java.util.List;
 
 public class Negamax {
     private final NormalEvaluator evaluator;
-    private final TranspositionTable transpositionTable;
+    private final TranspositionTable transpositionTable = new TranspositionTable(128);
 
     private int nodesSearched;
     private boolean isTimeUp;
@@ -21,7 +21,6 @@ public class Negamax {
 
     public Negamax(NormalEvaluator evaluator) {
         this.evaluator = evaluator;
-        this.transpositionTable = new TranspositionTable();
     }
 
     public Move findBestMove(BoardState boardState, int maxDepth, long time) {
@@ -74,6 +73,7 @@ public class Negamax {
         System.out.println("Nodes searched: " + nodesSearched);
         System.out.println("Time used: " + (System.currentTimeMillis() - startTime));
         System.out.println("Best score: " + bestScore);
+        System.out.println("TT collisions so far: " + transpositionTable.getCollisions());
         return bestMove;
     }
 
@@ -162,7 +162,7 @@ public class Negamax {
             } else {
                 flag = TranspositionTable.Entry.EXACT;
             }
-            transpositionTable.put(hashKey, new TranspositionTable.Entry(depth, maxScore, flag));
+            transpositionTable.put(hashKey, depth, maxScore, flag);
         }
 
         return maxScore;
