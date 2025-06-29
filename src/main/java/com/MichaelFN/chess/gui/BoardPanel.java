@@ -155,6 +155,7 @@ public class BoardPanel extends JPanel implements MouseListener, MouseMotionList
 
     public void resetBoard() {
         boardState.reset();
+        moveHistory.clear();
         repaint();
     }
 
