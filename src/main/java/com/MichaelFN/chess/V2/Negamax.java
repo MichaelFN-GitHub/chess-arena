@@ -1,7 +1,6 @@
 package com.MichaelFN.chess.V2;
 
 import com.MichaelFN.chess.V1.BoardState;
-import com.MichaelFN.chess.V1.GameStatus;
 import com.MichaelFN.chess.V1.Move;
 import com.MichaelFN.chess.V1.MoveGenerator;
 
@@ -18,15 +17,18 @@ public class Negamax {
     }
 
     public Move findBestMove(BoardState boardState, int maxDepth, long time) {
+        nodesSearched = 0;
         isTimeUp = false;
         Move bestMove = null;
 
         long startTime = System.currentTimeMillis();
         long endTime = startTime + time;
 
+        // Generate and order all legal moves
         List<Move> legalMoves = MoveGenerator.generateLegalMoves(boardState);
         MoveOrdering.orderMoves(legalMoves);
 
+        // Iterative deepening from 1 to maxDepth
         for (int depth = 1; depth <= maxDepth; depth++) {
             int bestScoreThisDepth = Integer.MIN_VALUE;
             Move bestMoveThisDepth = null;
@@ -34,6 +36,7 @@ public class Negamax {
             int alpha = Integer.MIN_VALUE + 1;
             int beta = Integer.MAX_VALUE - 1;
 
+            // Try all legal moves at this depth
             for (Move move : legalMoves) {
                 boardState.makeMove(move);
                 int score = -negamax(boardState, depth, alpha, beta, endTime);
@@ -58,6 +61,7 @@ public class Negamax {
     }
 
     private int negamax(BoardState boardState, int depth, int alpha, int beta, long endTime) {
+        // Check for timeout before any computation
         if (System.currentTimeMillis() > endTime) {
             isTimeUp = true;
             return 0;
@@ -65,19 +69,22 @@ public class Negamax {
 
         nodesSearched++;
 
-        GameStatus gameStatus = GameStatus.evaluateGameStatus(boardState);
-        if (gameStatus.isGameOver()) {
-            if (gameStatus.isCheckmate()) return -9999999 - depth;
+        // Check for checkmate or stalemate
+        if (boardState.isGameOver()) {
+            if (boardState.isCheckmate()) return -9999999 - depth;
 
             // Stalemate
             return 0;
         }
 
+        // Reached max depth: evaluate using quiescence search
         if (depth == 0) {
             return quiescence(boardState, alpha, beta, endTime);
         }
 
         int maxScore = Integer.MIN_VALUE;
+
+        // Generate and order all legal moves
         List<Move> legalMoves = MoveGenerator.generateLegalMoves(boardState);
         MoveOrdering.orderMoves(legalMoves);
 
@@ -123,8 +130,9 @@ public class Negamax {
         if (standPat >= beta) return beta;
         if (standPat > alpha) alpha = standPat;
 
+        // Generate and order all legal captures
         List<Move> captures = MoveGenerator.generateCaptures(boardState);
-        MoveOrdering.orderMoves(captures);
+        MoveOrdering.orderMoves(captures);  // Not sure if this matters much for performance
 
         for (Move move : captures) {
             if (System.currentTimeMillis() > endTime) {

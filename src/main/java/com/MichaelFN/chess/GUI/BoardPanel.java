@@ -24,7 +24,6 @@ public class BoardPanel extends JPanel implements MouseListener, MouseMotionList
 
     private final BoardState boardState;
     private final Image[][] pieceImages;
-    private GameStatus gameStatus;
 
     private int draggedFromRow, draggedFromCol;
     private int mouseX, mouseY;
@@ -36,7 +35,6 @@ public class BoardPanel extends JPanel implements MouseListener, MouseMotionList
 
     public BoardPanel(BoardState boardState) {
         this.boardState = boardState;
-        this.gameStatus = GameStatus.evaluateGameStatus(boardState);
         this.pieceImages = new Image[2][6];
 
         loadPieceImages();
@@ -51,7 +49,7 @@ public class BoardPanel extends JPanel implements MouseListener, MouseMotionList
         drawBoard(g);
         if (dragging) highlightLegalMoves(g);
         drawPieces(g);
-        if (gameStatus.isGameOver()) drawGameStatus(g);
+        if (boardState.isGameOver()) drawGameStatus(g);
     }
 
     private void highlightLegalMoves(Graphics g) {
@@ -109,6 +107,7 @@ public class BoardPanel extends JPanel implements MouseListener, MouseMotionList
         g2.fillRect(0, 0, getWidth(), getHeight());
 
         // Message box
+        GameStatus gameStatus = boardState.getGameStatus();
         g2.setColor(Color.WHITE);
         g2.setFont(new Font("Arial", Font.BOLD, 32));
         String msg = gameStatus.getGameStatusMessage();
@@ -149,18 +148,16 @@ public class BoardPanel extends JPanel implements MouseListener, MouseMotionList
 
     public void resetBoard() {
         boardState.reset();
-        gameStatus = GameStatus.evaluateGameStatus(boardState);
         repaint();
     }
 
     public void unmakeMove() {
         boardState.unmakeMove();
-        gameStatus = GameStatus.evaluateGameStatus(boardState);
         repaint();
     }
 
     public void makeEngineMove() {
-        if (gameStatus.isGameOver()) return;
+        if (boardState.isGameOver()) return;
 
         EngineInterface engine = boardState.getPlayerToMove() == com.MichaelFN.chess.V1.Color.WHITE ? whiteEngine : blackEngine;
 
@@ -173,11 +170,10 @@ public class BoardPanel extends JPanel implements MouseListener, MouseMotionList
     }
 
     private void makeMoveIfLegal(Move move) {
-        if (gameStatus.isGameOver()) return;
+        if (boardState.isGameOver()) return;
 
         if (MoveGenerator.generateLegalMoves(boardState).contains(move)) {
             boardState.makeMove(move);
-            gameStatus = GameStatus.evaluateGameStatus(boardState);
         }
     }
 

@@ -1,6 +1,5 @@
 package com.MichaelFN.chess.V1;
 
-import java.util.List;
 import java.util.Stack;
 
 public class BoardState {
@@ -13,6 +12,7 @@ public class BoardState {
     private int[] enPassantSquare;
     private int halfmoveClock;
     private int fullmoveNumber;
+    private GameStatus gameStatus;
 
     // History variables
     private final Stack<Move> moveHistory;
@@ -23,16 +23,19 @@ public class BoardState {
 
     // Helpers
     private int[][] kingPositions;
+    private int remainingPieces;
 
     public BoardState() {
         this.boardInitializer = new BoardInitializer(this);
-        reset();
+        this.gameStatus = new GameStatus(this);
 
-        moveHistory = new Stack<>();
-        castlingRightsHistory = new Stack<>();
-        enPassantSquareHistory = new Stack<>();
-        halfmoveClockHistory = new Stack<>();
-        fullmoveNumberHistory = new Stack<>();
+        this.moveHistory = new Stack<>();
+        this.castlingRightsHistory = new Stack<>();
+        this.enPassantSquareHistory = new Stack<>();
+        this.halfmoveClockHistory = new Stack<>();
+        this.fullmoveNumberHistory = new Stack<>();
+
+        reset();
     }
 
     public boolean isLegalMove(Move move) {
@@ -43,7 +46,7 @@ public class BoardState {
         return !kingInCheck;
     }
 
-    boolean hasLegalMove() {
+    public boolean hasLegalMove() {
         for (Move move : MoveGenerator.generatePseudoLegalMoves(this)) {
             if (isLegalMove(move)) return true;
         }
@@ -135,8 +138,15 @@ public class BoardState {
             }
         }
 
-        if (move.isCapture() || movedPiece.type() == PieceType.PAWN) halfmoveClock = 0;
-        else halfmoveClock++;
+        // Capture
+        if (move.isCapture()) {
+            remainingPieces--;
+            halfmoveClock = 0;
+        } else if (movedPiece.type() == PieceType.PAWN) {
+            halfmoveClock = 0;
+        } else {
+            halfmoveClock++;
+        }
 
         if (movedPiece.color() == Color.BLACK) fullmoveNumber++;
 
@@ -191,6 +201,9 @@ public class BoardState {
             position[toRow][rookToCol] = null;
         }
 
+        // Capture
+        if (move.isCapture()) remainingPieces++;
+
         // Update history
         castlingRights = castlingRightsHistory.pop();
         enPassantSquare = enPassantSquareHistory.pop();
@@ -198,6 +211,8 @@ public class BoardState {
         fullmoveNumber = fullmoveNumberHistory.pop();
 
         playerToMove = playerToMove == Color.WHITE ? Color.BLACK : Color.WHITE;
+
+        gameStatus.reset();
     }
 
     public String generateFenString() {
@@ -261,8 +276,22 @@ public class BoardState {
 
     public void reset() {
         boardInitializer.initializeStartingPosition();
+        gameStatus.reset();
     }
 
+    public boolean isGameOver() {
+        gameStatus.evaluateGameStatus();
+        return gameStatus.isGameOver();
+    }
+
+    public boolean isCheckmate() {
+        //gameStatus.evaluateGameStatus();
+        return gameStatus.isCheckmate();
+    }
+
+    public GameStatus getGameStatus() {
+        return gameStatus;
+    }
 
     public Piece[][] getPosition() {
         return position;
@@ -326,5 +355,13 @@ public class BoardState {
 
     public Piece getPiece(int row, int col) {
         return position[row][col];
+    }
+
+    public void setRemainingPieces(int remainingPieces) {
+        this.remainingPieces = remainingPieces;
+    }
+
+    public int getRemainingPieces() {
+        return remainingPieces;
     }
 }

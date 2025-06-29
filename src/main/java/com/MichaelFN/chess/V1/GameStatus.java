@@ -1,8 +1,8 @@
 package com.MichaelFN.chess.V1;
 
-import java.util.List;
-
 public class GameStatus {
+    private final BoardState boardState;
+
     private boolean isCheckmate;
     private boolean isStalemate;
     private boolean isFiftyMoveRule;
@@ -10,9 +10,11 @@ public class GameStatus {
 
     private Color winner;
 
-    public static GameStatus evaluateGameStatus(BoardState boardState) {
-        GameStatus gameStatus = new GameStatus();
+    public GameStatus(BoardState boardState) {
+        this.boardState = boardState;
+    }
 
+    public void evaluateGameStatus() {
         Color playerToMove = boardState.getPlayerToMove();
         Piece[][] position = boardState.getPosition();
 
@@ -22,31 +24,31 @@ public class GameStatus {
             Color opponentColor = playerToMove == Color.WHITE ? Color.BLACK : Color.WHITE;
             if (Utils.isSquareAttacked(kingPosition, position, opponentColor)) {
                 // Checkmate
-                gameStatus.setCheckmate(true);
-                gameStatus.setWinner(opponentColor);
+                isCheckmate = true;
+                winner = opponentColor;
             } else {
                 // Stalemate
-                gameStatus.setStalemate(true);
+                isStalemate = true;
             }
+            return;
         }
 
         // Halfmove rule
-        if (boardState.getHalfmoveClock() >= 50) gameStatus.setFiftyMoveRule(true);
+        if (boardState.getHalfmoveClock() >= 50) {
+            isFiftyMoveRule = true;
+            return;
+        }
 
         // Insufficient material (should take more scenarios into account than only kings)
-        boolean onlyKings = true;
-        for (int i = 0; i < 8; i++) {
-            for (int j = 0; j < 8; j++) {
-                Piece piece = position[i][j];
-                if (piece != null && piece.type() != PieceType.KING) {
-                    onlyKings = false;
-                    break;
-                }
-            }
-        }
-        gameStatus.setInsufficientMaterial(onlyKings);
+        isInsufficientMaterial = boardState.getRemainingPieces() == 2;
+    }
 
-        return gameStatus;
+    public void reset() {
+        isCheckmate = false;
+        isStalemate = false;
+        isFiftyMoveRule = false;
+        isInsufficientMaterial = false;
+        winner = null;
     }
 
     public String getGameStatusMessage() {
@@ -65,43 +67,7 @@ public class GameStatus {
         return isCheckmate;
     }
 
-    public void setCheckmate(boolean checkmate) {
-        isCheckmate = checkmate;
-    }
-
-    public boolean isStalemate() {
-        return isStalemate;
-    }
-
-    public void setStalemate(boolean stalemate) {
-        isStalemate = stalemate;
-    }
-
-    public boolean isFiftyMoveRule() {
-        return isFiftyMoveRule;
-    }
-
-    public void setFiftyMoveRule(boolean fiftyMoveRule) {
-        isFiftyMoveRule = fiftyMoveRule;
-    }
-
-    public boolean isInsufficientMaterial() {
-        return isInsufficientMaterial;
-    }
-
-    public void setInsufficientMaterial(boolean insufficientMaterial) {
-        isInsufficientMaterial = insufficientMaterial;
-    }
-
     public boolean isGameOver() {
         return isCheckmate || isStalemate || isFiftyMoveRule || isInsufficientMaterial;
-    }
-
-    public void setWinner(Color player) {
-        winner = player;
-    }
-
-    public Color getWinner() {
-        return winner;
     }
 }
