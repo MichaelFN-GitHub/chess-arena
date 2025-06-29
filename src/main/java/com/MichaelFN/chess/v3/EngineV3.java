@@ -11,7 +11,7 @@ public class EngineV3 extends EngineV2 {
     @Override
     public void startSearch(long timeLimitMillis) {
         System.out.println(getEngineName() + ": Search started...");
-        nextMove = searcher.findBestMove(boardState, 1, timeLimitMillis);
+        nextMove = searcher.findBestMove(boardState, 100, timeLimitMillis);
         System.out.println(getEngineName() + ": Done searching.");
     }
 

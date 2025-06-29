@@ -78,7 +78,7 @@ public class Negamax {
             if (boardState.isCheckmate()) return -9999999 - depth;
 
             // Stalemate
-            return 0;
+            return 1;   // Avoid stalemate in equals positions
         }
 
         // Reached max depth: evaluate using quiescence search
