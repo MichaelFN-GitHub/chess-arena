@@ -1,8 +1,5 @@
 package com.MichaelFN.chess.v1;
 
-import com.MichaelFN.chess.common.Color;
-import com.MichaelFN.chess.common.PieceType;
-
 public class BoardInitializer {
     public static final String[][] POSITION_STRING = {
             {"r", "n", "b", "q", "k", "b", "n", "r"},

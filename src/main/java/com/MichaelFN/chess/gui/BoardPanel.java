@@ -159,7 +159,7 @@ public class BoardPanel extends JPanel implements MouseListener, MouseMotionList
     public void makeEngineMove() {
         if (boardState.isGameOver()) return;
 
-        Engine engine = boardState.getPlayerToMove() == com.MichaelFN.chess.common.Color.WHITE ? whiteEngine : blackEngine;
+        Engine engine = boardState.getPlayerToMove() == com.MichaelFN.chess.v1.Color.WHITE ? whiteEngine : blackEngine;
 
         engine.setPosition(boardState.generateFenString());
         engine.startSearch(ENGINE_SEARCH_TIME_MS);

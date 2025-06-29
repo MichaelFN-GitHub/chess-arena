@@ -1,8 +1,5 @@
 package com.MichaelFN.chess.v1;
 
-import com.MichaelFN.chess.common.Color;
-import com.MichaelFN.chess.common.PieceType;
-
 import java.util.ArrayList;
 import java.util.List;
 
