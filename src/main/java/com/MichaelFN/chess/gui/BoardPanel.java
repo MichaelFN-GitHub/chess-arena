@@ -4,6 +4,7 @@ import com.MichaelFN.chess.interfaces.Engine;
 import com.MichaelFN.chess.v1.*;
 import com.MichaelFN.chess.v2.EngineV2;
 import com.MichaelFN.chess.v3.EngineV3;
+import com.MichaelFN.chess.v4.EngineV4;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -21,7 +22,7 @@ public class BoardPanel extends JPanel implements MouseListener, MouseMotionList
     private static final int TILE_SIZE = 80;
     private static final int BOARD_SIZE = 8;
 
-    public static final Engine[] ALL_ENGINES = {new EngineV1(), new EngineV2(), new EngineV3()};
+    public static final Engine[] ALL_ENGINES = {new EngineV1(), new EngineV2(), new EngineV3(), new EngineV4()};
     private static final int ENGINE_SEARCH_TIME_MS = 2000;
 
     private final BoardState boardState;

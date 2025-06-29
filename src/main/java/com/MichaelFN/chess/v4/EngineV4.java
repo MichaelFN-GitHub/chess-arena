@@ -1,0 +1,22 @@
+package com.MichaelFN.chess.v4;
+
+import com.MichaelFN.chess.interfaces.NormalEvaluator;
+import com.MichaelFN.chess.v2.Negamax;
+import com.MichaelFN.chess.v3.EngineV3;
+
+public class EngineV4 extends EngineV3 {
+    private final NormalEvaluator evaluator = new Evaluator();
+    private final Negamax searcher = new Negamax(evaluator);
+
+    @Override
+    public void startSearch(long timeLimitMillis) {
+        System.out.println(getEngineName() + ": Search started...");
+        nextMove = searcher.findBestMove(boardState, 100, timeLimitMillis);
+        System.out.println(getEngineName() + ": Done searching.");
+    }
+
+    @Override
+    public String getEngineName() {
+        return "Best Normal Engine";
+    }
+}
