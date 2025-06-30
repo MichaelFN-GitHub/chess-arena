@@ -1,10 +1,12 @@
 package com.MichaelFN.chess.v2;
 
+import com.MichaelFN.chess.v1.Move;
+
 import java.util.Arrays;
 
 public class TranspositionTable {
 
-    private static final int APPROX_ENTRY_SIZE_BYTES = 24;
+    private static final int APPROX_ENTRY_SIZE_BYTES = 40;
 
     private final int size;
     private final Entry[] table;
@@ -16,28 +18,31 @@ public class TranspositionTable {
         int depth;
         int score;
         int flag;
+        Move bestMove;
 
         static final int EXACT = 0;
         static final int LOWERBOUND = 1;
         static final int UPPERBOUND = 2;
 
-        Entry(long key, int depth, int score, int flag) {
+        Entry(long key, int depth, int score, int flag, Move bestMove) {
             this.key = key;
             this.depth = depth;
             this.score = score;
             this.flag = flag;
+            this.bestMove = bestMove;
         }
 
-        void update(long key, int depth, int score, int flag) {
+        void update(long key, int depth, int score, int flag, Move bestMove) {
             this.key = key;
             this.depth = depth;
             this.score = score;
             this.flag = flag;
+            this.bestMove = bestMove;
         }
     }
 
     public TranspositionTable(int sizeInMB) {
-        // Allocate sizeInMB megabytes, each entry is ~24 bytes
+        // Allocate sizeInMB megabytes
         int entries = (sizeInMB * 1024 * 1024) / APPROX_ENTRY_SIZE_BYTES;
 
         // MAke size a power of 2 for efficient indexing
@@ -52,18 +57,22 @@ public class TranspositionTable {
     }
 
     public void put(long key, int depth, int score, int flag) {
+        put(key, depth, score, flag, null);
+    }
+
+    public void put(long key, int depth, int score, int flag, Move bestMove) {
         int idx = index(key);
         Entry entry = table[idx];
 
         if (entry != null) {
-            //if (entry.key != key) collisions++;
+            if (entry.key != key) collisions++;
 
             // Only replace if new depth is greater or equal
             if (entry.key == key || entry.depth <= depth) {
-                entry.update(key, depth, score, flag);
+                entry.update(key, depth, score, flag, bestMove);
             }
         } else {
-            table[idx] = new Entry(key, depth, score, flag);
+            table[idx] = new Entry(key, depth, score, flag, bestMove);
         }
     }
 
@@ -92,6 +101,6 @@ public class TranspositionTable {
 
     @Override
     public String toString() {
-        return "TranspositionTable{size=" + size + ", collisions=" + collisions + "}";
+        return "TranspositionTable: size=" + size + ", collisions=" + collisions + "";
     }
 }

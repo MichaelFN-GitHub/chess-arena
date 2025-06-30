@@ -5,11 +5,13 @@ import com.MichaelFN.chess.v1.BoardState;
 import com.MichaelFN.chess.v1.Move;
 import com.MichaelFN.chess.v1.MoveGenerator;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class Negamax {
     private final NormalEvaluator evaluator;
-    private final TranspositionTable transpositionTable = new TranspositionTable(128);
+    private final TranspositionTable transpositionTable = new TranspositionTable(256);
 
     private int nodesSearched;
     private boolean isTimeUp;
@@ -32,48 +34,33 @@ public class Negamax {
 
         long startTime = System.currentTimeMillis();
         long endTime = startTime + time;
-        int ply = 0;
 
-        // Generate all legal moves
-        List<Move> legalMoves = MoveGenerator.generateLegalMoves(boardState);
+        clearPrincipalVariation();
 
-        // Iterative deepening from 1 to maxDepth
+        // Iterative deepening
         for (int depth = 1; depth <= maxDepth; depth++) {
-            int bestScoreThisDepth = Integer.MIN_VALUE;
-            Move bestMoveThisDepth = null;
 
-            int alpha = Integer.MIN_VALUE + 1;
+            int alpha = Integer.MIN_VALUE + 1;  // To avoid integer overflow
             int beta = Integer.MAX_VALUE - 1;
 
-            // Reorder moves based on principal variation at every max depth
-            Move pvMove = pvLength[ply] > 0 ? pvTable[ply][ply] : null;
-            MoveOrdering.orderMoves(legalMoves, pvMove);
-
-            // Try all legal moves at this depth
-            for (Move move : legalMoves) {
-                boardState.makeMove(move);
-                int score = -negamax(boardState, depth - 1, alpha, beta, ply + 1, endTime);
-                boardState.unmakeMove();
-
-                if (isTimeUp) break;
-
-                if (score > bestScoreThisDepth) {
-                    bestScoreThisDepth = score;
-                    bestMoveThisDepth = move;
-                    updatePrincipalVariation(ply, move);
-                }
-            }
+            int score = negamax(boardState, depth, alpha, beta, 0, endTime);
 
             if (isTimeUp) break;
-            bestScore = bestScoreThisDepth;
-            bestMove = bestMoveThisDepth;
-            System.out.println("Depth " + depth + " searched. Current best variation: " + getPrincipalVariation());
+
+            bestScore = score;
+            bestMove = transpositionTable.get(boardState.getKey()).bestMove;
+
+            // Print principal variation
+            System.out.print("Depth " + depth + " searched. Current best variation: ");
+            for (Move move : getPrincipalVariation(boardState, depth)) System.out.print(move + " ");
+            System.out.println();
         }
 
         System.out.println("Nodes searched: " + nodesSearched);
         System.out.println("Time used: " + (System.currentTimeMillis() - startTime));
         System.out.println("Best score: " + bestScore);
-        System.out.println("TT collisions so far: " + transpositionTable.getCollisions());
+        System.out.println("Best move: " + bestMove);
+        System.out.println(transpositionTable);
         return bestMove;
     }
 
@@ -89,8 +76,11 @@ public class Negamax {
         // Transposition table lookup
         long hashKey = boardState.getKey();
         TranspositionTable.Entry ttEntry = transpositionTable.get(hashKey);
+        Move ttMove = null;
 
         if (ttEntry != null && ttEntry.depth >= depth) {
+            ttMove = ttEntry.bestMove;
+
             if (ttEntry.flag == TranspositionTable.Entry.EXACT) {
                 return ttEntry.score;
             } else if (ttEntry.flag == TranspositionTable.Entry.LOWERBOUND && ttEntry.score > alpha) {
@@ -117,13 +107,14 @@ public class Negamax {
             return quiescence(boardState, alpha, beta, endTime);
         }
 
-        int maxScore = Integer.MIN_VALUE;
-        int originalAlpha = alpha;
-
         // Generate and order all legal moves
         List<Move> legalMoves = MoveGenerator.generateLegalMoves(boardState);
-        Move pvMove = pvLength[ply] > 0 ? pvTable[ply][ply] : null;
-        MoveOrdering.orderMoves(legalMoves, pvMove);
+        Move pvMove = pvLength[ply] > 0 ? pvTable[ply][0] : null;
+        MoveOrdering.orderMoves(legalMoves, pvMove, ttMove);
+
+        int maxScore = Integer.MIN_VALUE;
+        Move bestMoveAtThisNode = null;
+        int originalAlpha = alpha;
 
         for (Move move : legalMoves) {
             if (System.currentTimeMillis() > endTime) {
@@ -139,6 +130,7 @@ public class Negamax {
 
             if (score > maxScore) {
                 maxScore = score;
+                bestMoveAtThisNode = move;
             }
 
             if (score > alpha) {
@@ -152,17 +144,9 @@ public class Negamax {
             }
         }
 
-        // Store result in transposition table
         if (!isTimeUp) {
-            int flag;
-            if (maxScore <= originalAlpha) {
-                flag = TranspositionTable.Entry.UPPERBOUND;
-            } else if (maxScore >= beta) {
-                flag = TranspositionTable.Entry.LOWERBOUND;
-            } else {
-                flag = TranspositionTable.Entry.EXACT;
-            }
-            transpositionTable.put(hashKey, depth, maxScore, flag);
+            // Store result in transposition table
+            storeResult(hashKey, depth, maxScore, bestMoveAtThisNode, originalAlpha, beta);
         }
 
         return maxScore;
@@ -187,7 +171,7 @@ public class Negamax {
 
         // Generate and order all legal captures
         List<Move> captures = MoveGenerator.generateCaptures(boardState);
-        MoveOrdering.orderMoves(captures, null);  // Not sure if this matters much for performance
+        MoveOrdering.orderMoves(captures, null, null);  // Not sure if this matters much for performance
 
         for (Move move : captures) {
             if (System.currentTimeMillis() > endTime) {
@@ -208,22 +192,60 @@ public class Negamax {
         return alpha;
     }
 
-    private void updatePrincipalVariation(int ply, Move move) {
-        pvTable[ply][ply] = move;
-        for (int i = ply + 1; i < pvLength[ply + 1] + ply + 1; i++) {
-            pvTable[ply][i] = pvTable[ply + 1][i];
+    private void storeResult(long hashKey, int depth, int maxScore, Move bestMoveAtThisNode, int originalAlpha, int beta) {
+        int flag;
+        if (maxScore <= originalAlpha) {
+            flag = TranspositionTable.Entry.UPPERBOUND;
+        } else if (maxScore >= beta) {
+            flag = TranspositionTable.Entry.LOWERBOUND;
+        } else {
+            flag = TranspositionTable.Entry.EXACT;
         }
-        pvLength[ply] = pvLength[ply + 1] + 1;
+        transpositionTable.put(hashKey, depth, maxScore, flag, bestMoveAtThisNode);
     }
 
-    private String getPrincipalVariation() {
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < pvLength[0]; i++) {
-            sb.append(pvTable[0][i]);
-            if (i < pvLength[0] - 1) {
-                sb.append(" ");
-            }
+    private void updatePrincipalVariation(int ply, Move move) {
+
+        // Add move at this ply
+        pvTable[ply][0] = move;
+
+        // Append the rest of the moves from the next ply
+        int nextPlyPVLength = pvLength[ply + 1];
+        for (int i = 0; i < nextPlyPVLength; i++) {
+            pvTable[ply][i + 1] = pvTable[ply + 1][i];
         }
-        return sb.toString();
+        pvLength[ply] = nextPlyPVLength + 1;
+    }
+
+    private List<Move> getPrincipalVariation(BoardState boardState, int depth) {
+        List<Move> PV = new ArrayList<>();
+
+        // Walk through transposition table and append best moves
+        int counter = 0;
+        for (int i = 0; i < depth; i++) {
+            TranspositionTable.Entry ttEntry = transpositionTable.get(boardState.getKey());
+            if (ttEntry == null || ttEntry.bestMove == null) {
+                break;
+            }
+
+            Move move = ttEntry.bestMove;
+            PV.add(move);
+            boardState.makeMove(move);
+            counter++;
+        }
+
+        // Reset board state
+        for (int i = 0; i < counter; i++) {
+            boardState.unmakeMove();
+        }
+
+        return PV;
+    }
+
+    private void clearPrincipalVariation() {
+        for (int i = 0; i < pvTable.length; i++) {
+            Arrays.fill(pvTable[i], null);
+            pvLength[i] = 0;
+        }
     }
 }

@@ -23,7 +23,7 @@ public class BoardPanel extends JPanel implements MouseListener, MouseMotionList
     private static final int BOARD_SIZE = 8;
 
     public static final Engine[] ALL_ENGINES = {new EngineV1(), new EngineV2(), new EngineV3(), new EngineV4()};
-    private static final int ENGINE_SEARCH_TIME_MS = 2000;
+    private static final int ENGINE_SEARCH_TIME_MS = 1000;
 
     private final BoardState boardState;
     private final Image[][] pieceImages;

@@ -4,28 +4,53 @@ import com.MichaelFN.chess.v1.Move;
 
 import java.util.List;
 
-public class MoveOrdering {
-    public static void orderMoves(List<Move> moves, Move pvMove) {
-        moves.sort((move1, move2) -> {
-            // If either move is the PV move, it goes first
-            if (pvMove != null) {
-                if (move1.equals(pvMove)) return -1;
-                if (move2.equals(pvMove)) return 1;
-            }
+import static com.MichaelFN.chess.v2.Evaluator.PIECE_VALUES;
 
-            // Otherwise, sort by MVV-LVA score descending
-            int score1 = getMVVLVA_Score(move1);
-            int score2 = getMVVLVA_Score(move2);
+public class MoveOrdering {
+
+    private static final int PV_MOVE_SCORE = 1000000;
+    private static final int TT_MOVE_SCORE = 900000;
+    private static final int PROMOTION_SCORE = 800000;
+    private static final int[][] MVV_LVA_TABLE = new int[6][6]; // MVV_LVA_TABLE[victim][attacker]
+
+    static {
+        for (int victim = 0; victim < 6; victim++) {
+            for (int attacker = 0; attacker < 6; attacker++) {
+                MVV_LVA_TABLE[victim][attacker] = PIECE_VALUES[victim] * 10 - PIECE_VALUES[attacker];
+            }
+        }
+    }
+
+    public static void orderMoves(List<Move> moves, Move pvMove, Move ttMove) {
+        moves.sort((move1, move2) -> {
+            int score1 = scoreMove(move1, pvMove, ttMove);
+            int score2 = scoreMove(move2, pvMove, ttMove);
             return Integer.compare(score2, score1);
         });
+    }
+
+    private static int scoreMove(Move move, Move pvMove, Move ttMove) {
+        int score = 0;
+
+        if (move.equals(pvMove)) {
+            score += PV_MOVE_SCORE;
+        } else if (move.equals(ttMove)) {
+            score += TT_MOVE_SCORE;
+        } else {
+            score += getMVVLVA_Score(move);
+            score += move.isPromotion() ? PROMOTION_SCORE : 0;
+
+            // killer moves, history heuristic, etc.
+        }
+
+        return score;
     }
 
     public static int getMVVLVA_Score(Move move) {
         if (!move.isCapture()) return 0;
 
-        int victimValue = Evaluator.PIECE_VALUES[move.getCapturedPiece().type().ordinal()];
-        int attackerValue = Evaluator.PIECE_VALUES[move.getMovedPiece().type().ordinal()];
-
-        return victimValue * 10 - attackerValue;
+        int victimIdx = move.getCapturedPiece().type().ordinal();
+        int attackerIdx = move.getMovedPiece().type().ordinal();
+        return MVV_LVA_TABLE[victimIdx][attackerIdx];
     }
 }
