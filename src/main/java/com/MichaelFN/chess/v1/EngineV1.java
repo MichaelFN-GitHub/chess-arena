@@ -58,7 +58,7 @@ public class EngineV1 implements Engine {
 
     @Override
     public String getEngineName() {
-        return "Random Move Engine";
+        return "Random Move Engine (V1)";
     }
 
     @Override

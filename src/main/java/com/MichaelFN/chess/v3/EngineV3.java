@@ -19,6 +19,6 @@ public class EngineV3 extends EngineV2 {
 
     @Override
     public String getEngineName() {
-        return "Positional Eval Engine";
+        return "Positional Eval Engine (V3)";
     }
 }

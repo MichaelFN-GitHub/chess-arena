@@ -6,13 +6,12 @@ import com.MichaelFN.chess.v1.Color;
 import com.MichaelFN.chess.v1.Piece;
 import com.MichaelFN.chess.v1.PieceType;
 
-import static com.MichaelFN.chess.v3.EvaluationConstants.*;
-
 public class Evaluator implements NormalEvaluator {
 
     @Override
     public int evaluate(BoardState boardState) {
-        int score = 0;
+        int mgScore = 0;
+        int egScore = 0;
 
         Color playerToMove = boardState.getPlayerToMove();
         int playerColorIdx = playerToMove.ordinal();
@@ -27,18 +26,21 @@ public class Evaluator implements NormalEvaluator {
                 PieceType pieceType = piece.type();
                 Color pieceColor = piece.color();
                 int pieceTypeIdx = pieceType.ordinal();
+                int pieceColorIdx = pieceColor.ordinal();
                 boolean isPlayerPiece = pieceColor == playerToMove;
 
                 // Material
-                int materialValue = PIECE_MATERIAL_VALUE[pieceTypeIdx];
+                int mgMaterialValue = PestoConstants.MG_VALUE[pieceTypeIdx];
+                int egMaterialValue = PestoConstants.EG_VALUE[pieceTypeIdx];
 
                 // Position
                 int positionalTableRow = pieceColor == Color.WHITE ? row : 7 - row;
-                int positionalValue = PIECE_POSITIONAL_VALUE[pieceTypeIdx][positionalTableRow][col];
+                int mgPositionalValue = PestoConstants.MG_PIECE_TABLES[pieceTypeIdx][positionalTableRow][col];
+                int egPositionalValue = PestoConstants.EG_PIECE_TABLES[pieceTypeIdx][positionalTableRow][col];
 
                 // Pawn structure
                 if (pieceType == PieceType.PAWN) {
-                    pawnsOnRow[playerColorIdx][col]++;
+                    pawnsOnRow[isPlayerPiece ? 0 : 1][col]++;
                 }
 
                 // Bishop pair
@@ -46,10 +48,25 @@ public class Evaluator implements NormalEvaluator {
                     bishops[isPlayerPiece ? 0 : 1]++;
                 }
 
-                int value = materialValue + positionalValue;
-                score += isPlayerPiece ? value : -value;
+                int mgValue = mgMaterialValue + mgPositionalValue;
+                int egValue = egMaterialValue + egPositionalValue;
+                mgScore += isPlayerPiece ? mgValue : -mgValue;
+                egScore += isPlayerPiece ? egValue : -egValue;
             }
         }
+
+        // Taper evaluation based on game phase
+        int gamePhase = 0;
+        int[][] remainingPieces = boardState.getRemainingPieces();
+        for (int type = 0; type < 6; type++) {
+            int remainingPieceType = remainingPieces[0][type] + remainingPieces[1][type];
+            gamePhase += PestoConstants.GAME_PHASE_VALUES[type] * remainingPieceType;
+        }
+
+        int mgPhase = Math.min(24, gamePhase);
+        int egPhase = 24 - mgPhase;
+        int score = (mgScore*mgPhase + egScore*egPhase) / 24;
+
 
         // Pawn structure
         for (int i = 0; i < 8; i++) {
@@ -64,11 +81,8 @@ public class Evaluator implements NormalEvaluator {
         }
 
         // Bishop pair
-        if (bishops[0] >= 2) score += 20;
-        if (bishops[1] >= 2) score -= 20;
-
-        // Tempo
-        score += 5;
+        if (bishops[0] >= 2) score += 30;
+        if (bishops[1] >= 2) score -= 30;
 
         return score;
     }

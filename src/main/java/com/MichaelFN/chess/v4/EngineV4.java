@@ -19,6 +19,6 @@ public class EngineV4 extends EngineV3 {
 
     @Override
     public String getEngineName() {
-        return "Best Normal Engine";
+        return "Best Normal Engine (V4)";
     }
 }

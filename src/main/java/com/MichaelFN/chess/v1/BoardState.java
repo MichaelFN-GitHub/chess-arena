@@ -42,8 +42,6 @@ public class BoardState {
         this.repetitionHistory = new Stack<>();
 
         reset();
-
-        System.out.println(Arrays.deepToString(remainingPieces));
     }
 
     public boolean isLegalMove(Move move) {

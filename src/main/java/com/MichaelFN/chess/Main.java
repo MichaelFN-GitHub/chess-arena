@@ -16,10 +16,8 @@ import java.util.List;
 
 public class Main {
     public static void main(String[] args) throws IOException {
-        //String[] engineNames = {"EngineV1", "EngineV2", "EngineV3", "EngineV4"};
-        //int[][] result = Arena.runTournament(1, 100);
-        //Arena.printTournamentResults(result, engineNames);
+        Arena.runTournament(10, 100);
 
-        SwingUtilities.invokeLater(() -> new GUI(new BoardState()));
+        //SwingUtilities.invokeLater(() -> new GUI(new BoardState()));
     }
 }

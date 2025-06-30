@@ -23,6 +23,6 @@ public class EngineV2 extends EngineV1 {
 
     @Override
     public String getEngineName() {
-        return "Material Eval Engine";
+        return "Material Eval Engine (V2)";
     }
 }

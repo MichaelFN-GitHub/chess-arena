@@ -15,7 +15,14 @@ public class Arena {
         int n_engines = ALL_ENGINES.length;
         int[][] tournamentResult = new int[n_engines][n_engines];
 
-        MatchManager manager = new MatchManager();
+        // Collect engine names
+        String[] engineNames = new String[n_engines];
+        for (int i = 0; i < n_engines; i++) {
+            String[] nameSections = ALL_ENGINES[i].toString().split(" ");
+            engineNames[i] = nameSections[nameSections.length - 1];
+        }
+
+        // Read positions
         List<String> equalPositions;
         try {
             equalPositions = readChessPositions(n_positions);
@@ -27,12 +34,14 @@ public class Arena {
             return null;
         }
 
+        // Run tournament
+        MatchManager manager = new MatchManager();
         int n_matches = n_engines * n_engines * equalPositions.size();
         int matchCounter = 1;
         for (int i = 0; i < n_engines; i++) {
             for (int j = 0; j < n_engines; j++) {
                 for (String initialPosition : equalPositions) {
-                    System.out.println("Match " + matchCounter++ + " / " + n_matches + ":");
+                    System.out.print("Match " + matchCounter++ + " / " + n_matches + ":  ");
                     MatchResult matchResult = manager.playMatch(ALL_ENGINES[i], ALL_ENGINES[j], engineSearchTimeMS, initialPosition);
                     if (matchResult == MatchResult.DRAW) {
                         tournamentResult[i][j] += 5;
@@ -46,6 +55,7 @@ public class Arena {
             }
         }
 
+        printTournamentResults(tournamentResult, engineNames);
         return tournamentResult;
     }
 
