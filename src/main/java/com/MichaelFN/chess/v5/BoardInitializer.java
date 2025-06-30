@@ -23,9 +23,10 @@ public class BoardInitializer {
                 if (Character.isDigit(c)) {
                     col += Character.getNumericValue(c);
                 } else {
-                    int pieceColor = Character.isLowerCase(c) ? Constants.WHITE : Constants.BLACK;
+                    int pieceColor = Character.isUpperCase(c) ? Constants.WHITE : Constants.BLACK;
                     int pieceType = Utils.charToPieceType(c);
-                    int square = row*8 + col;
+                    int rank = 7 - row;
+                    int square = rank*8 + col;
                     board.pieces[pieceColor][pieceType] |= Bitboard.squareToBitboard(square);
                     col++;
                 }
@@ -37,7 +38,7 @@ public class BoardInitializer {
         if (parts[2].contains("Q")) board.castlingRights |= 0b0100;
         if (parts[2].contains("k")) board.castlingRights |= 0b0010;
         if (parts[2].contains("q")) board.castlingRights |= 0b0001;
-        board.enPassantSquare = parts[3].equals("-") ? -1 : Integer.parseInt(parts[3]);
+        board.enPassantSquare = parts[3].equals("-") ? -1 : Utils.algebraicToSquare(parts[3]);
         board.halfmoveClock = Integer.parseInt(parts[4]);
         board.fullmoveNumber = Integer.parseInt(parts[5]);
     }

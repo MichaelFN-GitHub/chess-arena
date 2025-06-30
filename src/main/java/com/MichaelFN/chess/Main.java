@@ -3,6 +3,7 @@ package com.MichaelFN.chess;
 import com.MichaelFN.chess.arena.Arena;
 import com.MichaelFN.chess.gui.GUI;
 import com.MichaelFN.chess.v1.*;
+import com.MichaelFN.chess.v5.Bitboard;
 import com.MichaelFN.chess.v5.Board;
 
 import javax.swing.*;
@@ -14,6 +15,11 @@ public class Main {
         //SwingUtilities.invokeLater(() -> new GUI(new BoardState()));
 
         Board board = new Board();
+        for (int i = 0; i < 2; i++) {
+            for (int j = 0; j < 6; j++) {
+                Bitboard.printBitboard(board.pieces[i][j]);
+            }
+        }
         System.out.println(board.playerToMove);
         System.out.println(board.castlingRights);
         System.out.println(board.enPassantSquare);
