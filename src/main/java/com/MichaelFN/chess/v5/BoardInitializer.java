@@ -27,7 +27,9 @@ public class BoardInitializer {
                     int pieceType = Utils.charToPieceType(c);
                     int rank = 7 - row;
                     int square = rank*8 + col;
-                    board.pieces[pieceColor][pieceType] |= Bitboard.squareToBitboard(square);
+                    long bb = Bitboard.squareToBitboard(square);
+                    board.pieces[pieceColor][pieceType] |= bb;
+                    board.pieces[pieceColor][6] |= bb;
                     col++;
                 }
             }
