@@ -1,5 +1,6 @@
 package com.MichaelFN.chess.v1;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Stack;
 
@@ -27,7 +28,7 @@ public class BoardState {
 
     // Helpers
     private int[][] kingPositions;
-    private int remainingPieces;
+    private int[][] remainingPieces;
 
     public BoardState() {
         this.boardInitializer = new BoardInitializer(this);
@@ -41,6 +42,8 @@ public class BoardState {
         this.repetitionHistory = new Stack<>();
 
         reset();
+
+        System.out.println(Arrays.deepToString(remainingPieces));
     }
 
     public boolean isLegalMove(Move move) {
@@ -146,7 +149,7 @@ public class BoardState {
 
         // Capture
         if (move.isCapture()) {
-            remainingPieces--;
+            remainingPieces[capturedPiece.color().ordinal()][capturedPiece.type().ordinal()]--;
             halfmoveClock = 0;
         } else if (movedPiece.type() == PieceType.PAWN) {
             halfmoveClock = 0;
@@ -211,7 +214,9 @@ public class BoardState {
         }
 
         // Capture
-        if (move.isCapture()) remainingPieces++;
+        if (move.isCapture()) {
+            remainingPieces[capturedPiece.color().ordinal()][capturedPiece.type().ordinal()]++;
+        }
 
         // Update history
         repetitionCounts.put(key, repetitionCounts.get(key) - 1);
@@ -372,11 +377,11 @@ public class BoardState {
         return position[row][col];
     }
 
-    public void setRemainingPieces(int remainingPieces) {
+    public void setRemainingPieces(int[][] remainingPieces) {
         this.remainingPieces = remainingPieces;
     }
 
-    public int getRemainingPieces() {
+    public int[][] getRemainingPieces() {
         return remainingPieces;
     }
 

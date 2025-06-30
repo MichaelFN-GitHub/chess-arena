@@ -49,7 +49,12 @@ public class GameStatus {
         }
 
         // Insufficient material (should take more scenarios into account than only kings)
-        isInsufficientMaterial = boardState.getRemainingPieces() == 2;
+        int pieceCount = 0;
+        int[][] remainingPieces = boardState.getRemainingPieces();
+        for (int i = 0; i < 6; i++) {
+            pieceCount += remainingPieces[0][i] + remainingPieces[1][i];
+        }
+        isInsufficientMaterial = pieceCount == 2;
     }
 
     public void reset() {

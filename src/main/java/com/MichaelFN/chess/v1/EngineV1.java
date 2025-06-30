@@ -6,6 +6,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Stack;
 
+import static com.MichaelFN.chess.common.Constants.DEBUG_ENGINES;
+
 public class EngineV1 implements Engine {
     protected BoardState boardState;
     protected Move nextMove;
@@ -17,7 +19,7 @@ public class EngineV1 implements Engine {
     @Override
     public void initialize() {
         boardState = new BoardState();
-        System.out.println(getEngineName() + ": Initialized.");
+        if (DEBUG_ENGINES) System.out.println(getEngineName() + ": Initialized.");
     }
 
     @Override
@@ -26,22 +28,32 @@ public class EngineV1 implements Engine {
         for (String move : uciMoves) {
             boardState.makeMove(Utils.uciToMove(move, boardState));
         }
-        System.out.println(getEngineName() + ": Position has been set.");
+        if (DEBUG_ENGINES) System.out.println(getEngineName() + ": Position has been set.");
     }
 
     @Override
     public void startSearch(long timeLimitMillis) {
         // Chooses move at random
-        System.out.println(getEngineName() + ": Search started...");
+        if (DEBUG_ENGINES) System.out.println(getEngineName() + ": Search started...");
         List<Move> moves = MoveGenerator.generateLegalMoves(boardState);
         Collections.shuffle(moves);
         nextMove = moves.getFirst();
-        System.out.println(getEngineName() + ": Done searching.");
+        if (DEBUG_ENGINES) System.out.println(getEngineName() + ": Done searching.");
     }
 
     @Override
     public String getMove() {
+        if (nextMove == null) {
+            List<Move> moves = MoveGenerator.generateLegalMoves(boardState);
+            Collections.shuffle(moves);
+            nextMove = moves.getFirst();
+        }
         return Utils.moveToUci(nextMove);
+    }
+
+    @Override
+    public void clear() {
+        // Does nothing
     }
 
     @Override

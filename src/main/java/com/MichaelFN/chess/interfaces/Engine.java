@@ -42,6 +42,11 @@ public interface Engine {
      */
     String getEngineName();
 
+    /**
+     * Clears important structures like transposition table used for search.
+     */
+    void clear();
+
     String toString();
 }
 

@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import static com.MichaelFN.chess.common.Constants.DEBUG_SEARCH;
+
 public class Negamax {
     private final NormalEvaluator evaluator;
     private final TranspositionTable transpositionTable = new TranspositionTable(256);
@@ -48,19 +50,24 @@ public class Negamax {
             if (isTimeUp) break;
 
             bestScore = score;
-            bestMove = transpositionTable.get(boardState.getKey()).bestMove;
+            TranspositionTable.Entry ttEntry = transpositionTable.get(boardState.getKey());
+            bestMove = ttEntry == null ? null : ttEntry.bestMove;
 
-            // Print principal variation
-            System.out.print("Depth " + depth + " searched. Current best variation: ");
-            for (Move move : getPrincipalVariation(boardState, depth)) System.out.print(move + " ");
-            System.out.println();
+            if (DEBUG_SEARCH) {
+                // Print principal variation
+                System.out.print("Depth " + depth + " searched. Current best variation: ");
+                for (Move move : getPrincipalVariation(boardState, depth)) System.out.print(move + " ");
+                System.out.println();
+            }
         }
 
-        System.out.println("Nodes searched: " + nodesSearched);
-        System.out.println("Time used: " + (System.currentTimeMillis() - startTime));
-        System.out.println("Best score: " + bestScore);
-        System.out.println("Best move: " + bestMove);
-        System.out.println(transpositionTable);
+        if (DEBUG_SEARCH) {
+            System.out.println("Nodes searched: " + nodesSearched);
+            System.out.println("Time used: " + (System.currentTimeMillis() - startTime));
+            System.out.println("Best score: " + bestScore);
+            System.out.println("Best move: " + bestMove);
+            System.out.println(transpositionTable);
+        }
         return bestMove;
     }
 
@@ -247,5 +254,9 @@ public class Negamax {
             Arrays.fill(pvTable[i], null);
             pvLength[i] = 0;
         }
+    }
+
+    public void clearTranspositionTable() {
+        transpositionTable.clear();
     }
 }

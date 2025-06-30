@@ -1,5 +1,6 @@
 package com.MichaelFN.chess.gui;
 
+import com.MichaelFN.chess.common.Constants;
 import com.MichaelFN.chess.interfaces.Engine;
 
 import javax.swing.*;
@@ -22,14 +23,14 @@ public class ButtonPanel extends JPanel {
 
 
         // Dropdown
-        JComboBox<Engine> whiteEngineDropdown = new JComboBox<>(BoardPanel.ALL_ENGINES);
+        JComboBox<Engine> whiteEngineDropdown = new JComboBox<>(Constants.ALL_ENGINES);
         styleDropdown(whiteEngineDropdown);
         whiteEngineDropdown.addActionListener(e -> {
             Engine selectedEngine = (Engine) whiteEngineDropdown.getSelectedItem();
             boardPanel.setWhiteEngine(selectedEngine);
         });
 
-        JComboBox<Engine> blackEngineDropdown = new JComboBox<>(BoardPanel.ALL_ENGINES);
+        JComboBox<Engine> blackEngineDropdown = new JComboBox<>(Constants.ALL_ENGINES);
         styleDropdown(blackEngineDropdown);
         blackEngineDropdown.addActionListener(e -> {
             Engine selectedEngine = (Engine) blackEngineDropdown.getSelectedItem();

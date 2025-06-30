@@ -2,9 +2,6 @@ package com.MichaelFN.chess.gui;
 
 import com.MichaelFN.chess.interfaces.Engine;
 import com.MichaelFN.chess.v1.*;
-import com.MichaelFN.chess.v2.EngineV2;
-import com.MichaelFN.chess.v3.EngineV3;
-import com.MichaelFN.chess.v4.EngineV4;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -18,11 +15,11 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Stack;
 
+import static com.MichaelFN.chess.common.Constants.ALL_ENGINES;
+
 public class BoardPanel extends JPanel implements MouseListener, MouseMotionListener {
     private static final int TILE_SIZE = 80;
     private static final int BOARD_SIZE = 8;
-
-    public static final Engine[] ALL_ENGINES = {new EngineV1(), new EngineV2(), new EngineV3(), new EngineV4()};
     private static final int ENGINE_SEARCH_TIME_MS = 1000;
 
     private final BoardState boardState;
@@ -36,8 +33,8 @@ public class BoardPanel extends JPanel implements MouseListener, MouseMotionList
     private Engine whiteEngine = ALL_ENGINES[0];
     private Engine blackEngine = ALL_ENGINES[0];
 
-    private String FEN;
-    private Stack<String> moveHistory;
+    private final String FEN;
+    private final Stack<String> moveHistory;
 
     public BoardPanel(BoardState boardState) {
         this.boardState = boardState;

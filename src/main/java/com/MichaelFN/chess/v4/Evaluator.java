@@ -64,8 +64,8 @@ public class Evaluator implements NormalEvaluator {
         }
 
         // Bishop pair
-        if (bishops[0] >= 2) score += 50;
-        if (bishops[1] >= 2) score -= 50;
+        if (bishops[0] >= 2) score += 20;
+        if (bishops[1] >= 2) score -= 20;
 
         // Tempo
         score += 5;

@@ -37,7 +37,7 @@ public class BoardInitializer {
 
         Piece[][] position = new Piece[8][8];
         int[][] kingPositions = new int[2][2];
-        int remainingPieces = 0;
+        int[][] remainingPieces = new int[2][6];
         for (int row = 0; row < 8; row++) {
             int col = 0;
             for (int j = 0; j < fenRanks[row].length(); j++) {
@@ -47,11 +47,14 @@ public class BoardInitializer {
                 } else {
                     String pieceString = String.valueOf(c);
                     Piece piece = Utils.stringToPiece(pieceString);
+                    int pieceTypeIdx = piece.type().ordinal();
+                    int pieceColorIdx = piece.color().ordinal();
+
                     if (piece.type() == PieceType.KING) {
-                        kingPositions[piece.color().ordinal()] = new int[]{row,col};
+                        kingPositions[pieceColorIdx] = new int[]{row,col};
                     }
                     position[row][col] = piece;
-                    remainingPieces++;
+                    remainingPieces[pieceColorIdx][pieceTypeIdx]++;
                     col++;
                 }
             }
@@ -79,18 +82,20 @@ public class BoardInitializer {
     public void initializeFromStringArray(String[][] stringArray) {
         Piece[][] position = new Piece[8][8];
         int[][] kingPositions = new int[2][2];
-        int remainingPieces = 0;
+        int[][] remainingPieces = new int[2][6];
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
                 String pieceString = stringArray[i][j];
                 Piece piece = Utils.stringToPiece(pieceString);
                 position[i][j] = piece;
+                int pieceTypeIdx = piece.type().ordinal();
+                int pieceColorIdx = piece.color().ordinal();
 
                 if (piece.type() == PieceType.KING) {
                     kingPositions[piece.color().ordinal()] = new int[]{i,j};
                 }
 
-                if (piece != null) remainingPieces++;
+                remainingPieces[pieceColorIdx][pieceTypeIdx]++;
             }
         }
         boardState.setPosition(position);
