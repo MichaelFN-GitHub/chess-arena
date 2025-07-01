@@ -1,5 +1,7 @@
 package com.MichaelFN.chess.v5;
 
+import static com.MichaelFN.chess.v5.Constants.*;
+
 public final class Bitboard {
 
     public static final int A1 = 0;
@@ -82,6 +84,8 @@ public final class Bitboard {
     public static final long FILE_F = FILE_A << 5;
     public static final long FILE_G = FILE_A << 6;
     public static final long FILE_H = FILE_A << 7;
+    public static final long FILE_AB = FILE_A | FILE_B;
+    public static final long FILE_GH = FILE_G | FILE_H;
 
     public static final long RANK_1 = 0x00000000000000FFL;
     public static final long RANK_2 = RANK_1 << 8;
@@ -94,6 +98,87 @@ public final class Bitboard {
 
     public static final long DARK_SQUARES = 0x55AA55AA55AA55AAL;
     public static final long LIGHT_SQUARES = ~DARK_SQUARES;
+
+    // Look-up table for single bit bitboards for each square on the chess board
+    public static long[] SQUARE_BB_LOOK_UP = new long[64];
+    static {
+        for (int i = 0; i < 64; i++) {
+            SQUARE_BB_LOOK_UP[i] = setBit(i, 0L);
+        }
+    }
+
+    // Masks of diagonals and anti-diagonals
+    public static long[] DIAGONAL_MASKS = new long[15];
+    public static long[] ANTI_DIAGONAL_MASKS = new long[15];
+    static {
+        for (int rank = 0; rank < 8; rank++) {
+            for (int file = 0; file < 8; file++) {
+                int diagonalIndex = rank + file;
+                int antiDiagonalIndex = rank + 7 - file;
+
+                DIAGONAL_MASKS[diagonalIndex] |= SQUARE_BB_LOOK_UP[rank * 8 + file];
+                ANTI_DIAGONAL_MASKS[antiDiagonalIndex] |= SQUARE_BB_LOOK_UP[rank * 8 + file];
+            }
+        }
+    }
+
+    // Masks of knight moves for each square
+    public static long[] KNIGHT_MOVE_MASKS = new long[64];
+    static {
+        for (int square = 0; square < 64; square++) {
+            long mask = 0L;
+            long knightBB = SQUARE_BB_LOOK_UP[square];
+            mask |= ((knightBB << 17) & ~FILE_A);
+            mask |= ((knightBB << 10) & ~FILE_AB);
+            mask |= ((knightBB >>>  6) & ~FILE_AB);
+            mask |= ((knightBB >>> 15) & ~FILE_A);
+            mask |= ((knightBB << 15) & ~FILE_H);
+            mask |= ((knightBB <<  6) & ~FILE_GH);
+            mask |= ((knightBB >>> 10) & ~FILE_GH);
+            mask |= ((knightBB >>> 17) & ~FILE_H);
+            KNIGHT_MOVE_MASKS[square] = mask;
+        }
+    }
+
+    // Masks of king moves for each square
+    public static long[] KING_MOVE_MASKS = new long[64];
+    static {
+        for (int square = 0; square < 64; square++) {
+            long mask = 0L;
+            long kingBB = SQUARE_BB_LOOK_UP[square];
+            mask |= (kingBB << 1) & ~FILE_A;
+            mask |= (kingBB << 7) & ~FILE_H & ~RANK_1;
+            mask |= (kingBB << 8) & ~RANK_1;
+            mask |= (kingBB << 9) & ~FILE_A & ~RANK_1;
+            mask |= (kingBB >>> 1) & ~FILE_H;
+            mask |= (kingBB >>> 7) & ~FILE_A & ~RANK_8;
+            mask |= (kingBB >>> 8) & ~RANK_8;
+            mask |= (kingBB >>> 9) & ~FILE_H & ~RANK_8;
+            KING_MOVE_MASKS[square] = mask;
+        }
+    }
+
+    // Mask of pawn attacks from each square [color][square]
+    public static long[][] PAWN_ATTACK_MASKS = new long[2][64];
+    static {
+        for (int i = 0; i < 64; i++) {
+            long squareMask = SQUARE_BB_LOOK_UP[i];
+            PAWN_ATTACK_MASKS[WHITE][i] = ((squareMask & ~FILE_A) << 7) | ((squareMask & ~FILE_H) << 9);
+            PAWN_ATTACK_MASKS[BLACK][i] = ((squareMask & ~FILE_H) >>> 7) | ((squareMask & ~FILE_A) >>> 9);
+        }
+    }
+
+    public static boolean hasBit(int i, long bb) {
+        return (bb & (1L << i)) != 0;
+    }
+
+    public static int getBit(int i, long bb) {
+        return (int)((bb >> i) & 1);
+    }
+
+    public static long setBit(int i, long bb) {
+        return bb | (1L << i);
+    }
 
     public static int bitCount(long bb) {
         return Long.bitCount(bb);
@@ -116,7 +201,7 @@ public final class Bitboard {
     }
 
     public static long squareToBitboard(int sq) {
-        return 1L << sq;
+        return SQUARE_BB_LOOK_UP[sq];
     }
 
     public static String toString(long bb) {

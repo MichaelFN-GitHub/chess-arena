@@ -43,6 +43,16 @@ public class Board {
         BoardInitializer.initializeBoard(this);
     }
 
+    public int getPieceAtSquare(int sq, int color) {
+        long mask = 1L << sq;
+        for (int pieceType = 0; pieceType < 6; pieceType++) {
+            if ((pieces[color][pieceType] & mask) != 0) {
+                return pieceType;
+            }
+        }
+        return 0;
+    }
+
     public void clear() {
         pieces = new long[2][7];
         repetitionCount.clear();

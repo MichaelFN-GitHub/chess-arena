@@ -2,6 +2,7 @@ package com.MichaelFN.chess.v5;
 
 public class Constants {
     public static final int MAX_MOVES = 256;
+    public static final int MAX_MOVES_IN_POSITION = 256;
 
     // COLOR
     public static final int WHITE = 0;
