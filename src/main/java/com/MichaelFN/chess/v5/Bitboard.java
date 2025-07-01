@@ -107,6 +107,10 @@ public final class Bitboard {
         return 63 - Long.numberOfLeadingZeros(bb);
     }
 
+    public static long removeLsb(long bb) {
+        return bb & (bb - 1);
+    }
+
     public static boolean isEmpty(long bb) {
         return bb == 0L;
     }

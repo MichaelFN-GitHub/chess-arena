@@ -1,5 +1,7 @@
 package com.MichaelFN.chess.v5;
 
+import static com.MichaelFN.chess.v5.Constants.*;
+
 public class BoardInitializer {
     public static final String START_POS = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
@@ -23,19 +25,19 @@ public class BoardInitializer {
                 if (Character.isDigit(c)) {
                     col += Character.getNumericValue(c);
                 } else {
-                    int pieceColor = Character.isUpperCase(c) ? Constants.WHITE : Constants.BLACK;
+                    int pieceColor = Character.isUpperCase(c) ? WHITE : BLACK;
                     int pieceType = Utils.charToPieceType(c);
                     int rank = 7 - row;
                     int square = rank*8 + col;
                     long bb = Bitboard.squareToBitboard(square);
                     board.pieces[pieceColor][pieceType] |= bb;
-                    board.pieces[pieceColor][6] |= bb;
+                    board.pieces[pieceColor][ALL_PIECES] |= bb;
                     col++;
                 }
             }
         }
 
-        board.playerToMove = parts[1].equals("w") ? Constants.WHITE : Constants.BLACK;
+        board.playerToMove = parts[1].equals("w") ? WHITE : BLACK;
         if (parts[2].contains("K")) board.castlingRights |= 0b1000;
         if (parts[2].contains("Q")) board.castlingRights |= 0b0100;
         if (parts[2].contains("k")) board.castlingRights |= 0b0010;

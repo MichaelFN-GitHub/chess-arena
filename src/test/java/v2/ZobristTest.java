@@ -1,7 +1,7 @@
 package v2;
 
 import com.MichaelFN.chess.v1.BoardState;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class ZobristTest {
     @Test

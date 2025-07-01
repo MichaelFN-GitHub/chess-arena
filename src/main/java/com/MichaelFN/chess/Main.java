@@ -16,7 +16,7 @@ public class Main {
 
         Board board = new Board();
         for (int i = 0; i < 2; i++) {
-            for (int j = 0; j < 6; j++) {
+            for (int j = 0; j < 7; j++) {
                 Bitboard.printBitboard(board.pieces[i][j]);
             }
         }

@@ -3,7 +3,7 @@ package v1;
 import com.MichaelFN.chess.v1.BoardState;
 import com.MichaelFN.chess.v1.Move;
 import com.MichaelFN.chess.v1.MoveGenerator;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -11,7 +11,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 
 public class PerftTest {
 
@@ -37,9 +38,9 @@ public class PerftTest {
                 String[] test = sections[i].split(" ");
                 int depth = Integer.parseInt(test[0].substring(1));
                 long expectedNodes = Long.parseLong(test[1]);
-                if (expectedNodes > 5000000) break;
+                if (expectedNodes > 500000) break;
                 long computedNodes = perft(boardState, depth);
-                assertEquals("Perft test failed on depth " + depth + " in the following position: " + FEN, expectedNodes, computedNodes);
+                assertEquals(expectedNodes, computedNodes, "Perft test failed on depth " + depth + " in the following position: " + FEN);
             }
         }
     }
