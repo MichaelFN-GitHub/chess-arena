@@ -1,4 +1,4 @@
-package com.MichaelFN.chess.v5;
+package com.MichaelFN.chess.v5.board;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -43,14 +43,8 @@ public class Board {
         BoardInitializer.initializeBoard(this);
     }
 
-    public int getPieceAtSquare(int sq, int color) {
-        long mask = 1L << sq;
-        for (int pieceType = 0; pieceType < 6; pieceType++) {
-            if ((pieces[color][pieceType] & mask) != 0) {
-                return pieceType;
-            }
-        }
-        return 0;
+    public void parseFEN(String FEN) {
+        BoardInitializer.initializeBoard(this, FEN);
     }
 
     public void clear() {

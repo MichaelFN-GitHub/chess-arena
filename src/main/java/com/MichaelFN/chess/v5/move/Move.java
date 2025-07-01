@@ -1,6 +1,5 @@
-package com.MichaelFN.chess.v5;
+package com.MichaelFN.chess.v5.move;
 
-import static com.MichaelFN.chess.v5.Constants.*;
 import static com.MichaelFN.chess.v5.Utils.PIECE_NAMES;
 import static com.MichaelFN.chess.v5.Utils.SQUARE_NAMES;
 
@@ -41,44 +40,43 @@ public class Move {
 
     // Factory methods
     public static int createQuietMove(int from, int to) {
-        return encodeMove(from, to, 0, 0, 0);
+        return encodeMove(from, to, 0, 0);
     }
 
-    public static int createCapture(int from, int to, int capturedPiece) {
-        return encodeMove(from, to, FLAG_CAPTURE, 0, capturedPiece);
+    public static int createCapture(int from, int to) {
+        return encodeMove(from, to, FLAG_CAPTURE, 0);
     }
 
     public static int createDoublePawnPush(int from, int to) {
-        return encodeMove(from, to, FLAG_DOUBLE_PAWN_PUSH, 0, 0);
+        return encodeMove(from, to, FLAG_DOUBLE_PAWN_PUSH, 0);
     }
 
     public static int createCastleKingSide(int from, int to) {
-        return encodeMove(from, to, FLAG_KINGSIDE_CASTLE, 0, 0);
+        return encodeMove(from, to, FLAG_KINGSIDE_CASTLE, 0);
     }
 
     public static int createCastleQueenSide(int from, int to) {
-        return encodeMove(from, to, FLAG_QUEENSIDE_CASTLE, 0, 0);
+        return encodeMove(from, to, FLAG_QUEENSIDE_CASTLE, 0);
     }
 
     public static int createEnPassantCapture(int from, int to) {
-        return encodeMove(from, to, FLAG_EN_PASSANT | FLAG_CAPTURE, 0, PAWN);
+        return encodeMove(from, to, FLAG_EN_PASSANT | FLAG_CAPTURE, 0);
     }
 
     public static int createPromotionMove(int from, int to, int promoPiece) {
-        return encodeMove(from, to, FLAG_PROMOTION, promoPiece, 0);
+        return encodeMove(from, to, FLAG_PROMOTION, promoPiece);
     }
 
-    public static int createPromotionCapture(int from, int to, int promoPiece, int capturedPiece) {
-        return encodeMove(from, to, FLAG_PROMOTION | FLAG_CAPTURE, promoPiece, capturedPiece);
+    public static int createPromotionCapture(int from, int to, int promoPiece) {
+        return encodeMove(from, to, FLAG_PROMOTION | FLAG_CAPTURE, promoPiece);
     }
 
     // Encoding
-    private static int encodeMove(int from, int to, int flags, int promo, int captured) {
+    private static int encodeMove(int from, int to, int flags, int promo) {
         return ((from & SQUARE_MASK) << FROM_SHIFT) |
                 ((to & SQUARE_MASK) << TO_SHIFT) |
                 ((flags & FLAG_MASK) << FLAG_SHIFT) |
-                ((promo & PIECE_MASK) << PROMO_SHIFT) |
-                ((captured & PIECE_MASK) << CAPTURED_SHIFT);
+                ((promo & PIECE_MASK) << PROMO_SHIFT);
     }
 
     // Extractors
@@ -145,7 +143,7 @@ public class Move {
                 sb.append("=").append(PIECE_NAMES[getPromotionPiece(move)]);
             }
             if (isCapture(move)) {
-                sb.append(" (captures ").append(PIECE_NAMES[getCapturedPiece(move)]).append(")");
+                sb.append(" (capture)");
             }
             if (isEnPassant(move)) {
                 sb.append(" (en passant)");

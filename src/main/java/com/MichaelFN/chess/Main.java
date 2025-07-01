@@ -1,13 +1,11 @@
 package com.MichaelFN.chess;
 
-import com.MichaelFN.chess.arena.Arena;
-import com.MichaelFN.chess.gui.GUI;
-import com.MichaelFN.chess.v1.*;
-import com.MichaelFN.chess.v5.Bitboard;
-import com.MichaelFN.chess.v5.Board;
+import com.MichaelFN.chess.v5.board.Bitboard;
+import com.MichaelFN.chess.v5.board.Board;
+import com.MichaelFN.chess.v5.move.MoveGenerator;
+import com.MichaelFN.chess.v5.move.MoveTables;
 
-import javax.swing.*;
-import java.io.IOException;
+import static com.MichaelFN.chess.v5.board.Bitboard.*;
 
 public class Main {
     public static void main(String[] args) {
@@ -25,5 +23,9 @@ public class Main {
         System.out.println(board.enPassantSquare);
         System.out.println(board.halfmoveClock);
         System.out.println(board.fullmoveNumber);
+
+        System.out.println();
+        MoveGenerator.generatePseudoLegalMoves(board);
+        System.out.println(MoveGenerator.moveCounter);
     }
 }

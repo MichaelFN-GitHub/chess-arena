@@ -22,4 +22,10 @@ public class Constants {
     public static final int WHITE_WIN = 1;
     public static final int BLACK_WIN = 2;
     public static final int DRAW = 3;
+
+    // CASTLING
+    public static final int CASTLE_WHITE_KINGSIDE = 0b1000;
+    public static final int CASTLE_WHITE_QUEENSIDE = 0b0100;
+    public static final int CASTLE_BLACK_KINGSIDE = 0b0010;
+    public static final int CASTLE_BLACK_QUEENSIDE = 0b0001;
 }

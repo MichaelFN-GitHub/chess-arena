@@ -1,4 +1,6 @@
-package com.MichaelFN.chess.v5;
+package com.MichaelFN.chess.v5.board;
+
+import com.MichaelFN.chess.v5.Utils;
 
 import static com.MichaelFN.chess.v5.Constants.*;
 

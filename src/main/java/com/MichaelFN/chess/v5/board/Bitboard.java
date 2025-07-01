@@ -1,6 +1,4 @@
-package com.MichaelFN.chess.v5;
-
-import static com.MichaelFN.chess.v5.Constants.*;
+package com.MichaelFN.chess.v5.board;
 
 public final class Bitboard {
 
@@ -95,6 +93,8 @@ public final class Bitboard {
     public static final long RANK_6 = RANK_1 << 40;
     public static final long RANK_7 = RANK_1 << 48;
     public static final long RANK_8 = RANK_1 << 56;
+    public static final long RANK_1234567 = ~RANK_8;
+    public static final long RANK_2345678 = ~RANK_1;
 
     public static final long DARK_SQUARES = 0x55AA55AA55AA55AAL;
     public static final long LIGHT_SQUARES = ~DARK_SQUARES;
@@ -103,9 +103,43 @@ public final class Bitboard {
     public static long[] SQUARE_BB_LOOK_UP = new long[64];
     static {
         for (int i = 0; i < 64; i++) {
-            SQUARE_BB_LOOK_UP[i] = setBit(i, 0L);
+            SQUARE_BB_LOOK_UP[i] = setBit(0L, i);
         }
     }
+
+    // Masks of ranks and files
+    public static final long[] RANK_MASKS = new long[8];
+    public static final long[] FILE_MASKS = new long[8];
+    static {
+        for (int rank = 0; rank < 8; rank++) {
+            long mask = 0L;
+            for (int file = 0; file < 8; file++) {
+                mask |= (1L << (rank * 8 + file));
+            }
+            RANK_MASKS[rank] = mask;
+        }
+    }
+
+    public static final long[] RANK_MASKS_PER_SQUARE = new long[64];
+    public static final long[] FILE_MASKS_PER_SQUARE = new long[64];
+    static {
+        for (int file = 0; file < 8; file++) {
+            long mask = 0L;
+            for (int rank = 0; rank < 8; rank++) {
+                mask |= (1L << (rank * 8 + file));
+            }
+            FILE_MASKS[file] = mask;
+        }
+
+        for (int square = 0; square < 64; square++) {
+            int rank = square / 8;
+            int file = square % 8;
+
+            RANK_MASKS_PER_SQUARE[square] = RANK_MASKS[rank];
+            FILE_MASKS_PER_SQUARE[square] = FILE_MASKS[file];
+        }
+    }
+
 
     // Masks of diagonals and anti-diagonals
     public static long[] DIAGONAL_MASKS = new long[15];
@@ -122,61 +156,30 @@ public final class Bitboard {
         }
     }
 
-    // Masks of knight moves for each square
-    public static long[] KNIGHT_MOVE_MASKS = new long[64];
+    public static final long[] DIAGONAL_MASKS_PER_SQUARE = new long[64];
+    public static final long[] ANTI_DIAGONAL_MASKS_PER_SQUARE = new long[64];
     static {
-        for (int square = 0; square < 64; square++) {
-            long mask = 0L;
-            long knightBB = SQUARE_BB_LOOK_UP[square];
-            mask |= ((knightBB << 17) & ~FILE_A);
-            mask |= ((knightBB << 10) & ~FILE_AB);
-            mask |= ((knightBB >>>  6) & ~FILE_AB);
-            mask |= ((knightBB >>> 15) & ~FILE_A);
-            mask |= ((knightBB << 15) & ~FILE_H);
-            mask |= ((knightBB <<  6) & ~FILE_GH);
-            mask |= ((knightBB >>> 10) & ~FILE_GH);
-            mask |= ((knightBB >>> 17) & ~FILE_H);
-            KNIGHT_MOVE_MASKS[square] = mask;
+        for (int rank = 0; rank < 8; rank++) {
+            for (int file = 0; file < 8; file++) {
+                int square = rank * 8 + file;
+                int diagonalIndex = rank + file;
+                int antiDiagonalIndex = rank + 7 - file;
+
+                DIAGONAL_MASKS_PER_SQUARE[square] = DIAGONAL_MASKS[diagonalIndex];
+                ANTI_DIAGONAL_MASKS_PER_SQUARE[square] = ANTI_DIAGONAL_MASKS[antiDiagonalIndex];
+            }
         }
     }
 
-    // Masks of king moves for each square
-    public static long[] KING_MOVE_MASKS = new long[64];
-    static {
-        for (int square = 0; square < 64; square++) {
-            long mask = 0L;
-            long kingBB = SQUARE_BB_LOOK_UP[square];
-            mask |= (kingBB << 1) & ~FILE_A;
-            mask |= (kingBB << 7) & ~FILE_H & ~RANK_1;
-            mask |= (kingBB << 8) & ~RANK_1;
-            mask |= (kingBB << 9) & ~FILE_A & ~RANK_1;
-            mask |= (kingBB >>> 1) & ~FILE_H;
-            mask |= (kingBB >>> 7) & ~FILE_A & ~RANK_8;
-            mask |= (kingBB >>> 8) & ~RANK_8;
-            mask |= (kingBB >>> 9) & ~FILE_H & ~RANK_8;
-            KING_MOVE_MASKS[square] = mask;
-        }
-    }
-
-    // Mask of pawn attacks from each square [color][square]
-    public static long[][] PAWN_ATTACK_MASKS = new long[2][64];
-    static {
-        for (int i = 0; i < 64; i++) {
-            long squareMask = SQUARE_BB_LOOK_UP[i];
-            PAWN_ATTACK_MASKS[WHITE][i] = ((squareMask & ~FILE_A) << 7) | ((squareMask & ~FILE_H) << 9);
-            PAWN_ATTACK_MASKS[BLACK][i] = ((squareMask & ~FILE_H) >>> 7) | ((squareMask & ~FILE_A) >>> 9);
-        }
-    }
-
-    public static boolean hasBit(int i, long bb) {
+    public static boolean hasBit(long bb, int i) {
         return (bb & (1L << i)) != 0;
     }
 
-    public static int getBit(int i, long bb) {
+    public static int getBit(long bb, int i) {
         return (int)((bb >> i) & 1);
     }
 
-    public static long setBit(int i, long bb) {
+    public static long setBit(long bb, int i) {
         return bb | (1L << i);
     }
 
@@ -192,7 +195,7 @@ public final class Bitboard {
         return 63 - Long.numberOfLeadingZeros(bb);
     }
 
-    public static long removeLsb(long bb) {
+    public static long clearLsb(long bb) {
         return bb & (bb - 1);
     }
 

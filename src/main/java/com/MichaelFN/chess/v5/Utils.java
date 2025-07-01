@@ -1,5 +1,11 @@
 package com.MichaelFN.chess.v5;
 
+import com.MichaelFN.chess.v5.board.Board;
+
+import static com.MichaelFN.chess.v5.Constants.*;
+import static com.MichaelFN.chess.v5.board.Bitboard.*;
+import static com.MichaelFN.chess.v5.move.MoveTables.*;
+
 public class Utils {
 
     public static final String[] SQUARE_NAMES = {
@@ -19,7 +25,7 @@ public class Utils {
 
     public static int charToPieceType(char c) {
         return switch (Character.toLowerCase(c)) {
-            case 'p' -> Constants.PAWN;
+            case 'p' -> PAWN;
             case 'n' -> Constants.KNIGHT;
             case 'b' -> Constants.BISHOP;
             case 'r' -> Constants.ROOK;
@@ -33,5 +39,48 @@ public class Utils {
         int file = sq.charAt(0) - 'a';
         int rank = sq.charAt(1) - '1';
         return rank * 8 + file;
+    }
+
+    public static boolean isSquareAttacked(Board board, int square, int byColor, long occupancy) {
+        long[] byPieces = board.pieces[byColor];
+
+        // PAWN attacks
+        long pawnAttacks = PAWN_ATTACK_MASKS[1 - byColor][square];
+        if ((byPieces[PAWN] & pawnAttacks) != 0) return true;
+
+        // KNIGHT attacks
+        if ((byPieces[KNIGHT] & KNIGHT_MOVE_MASKS[square]) != 0) return true;
+
+        // KING attacks
+        if ((byPieces[KING] & KING_MOVE_MASKS[square]) != 0) return true;
+
+        // BISHOP + QUEEN diagonal attacks
+        long bishopLikeAttackers = byPieces[BISHOP] | byPieces[QUEEN];
+        if ((getBishopMoves(square, occupancy) & bishopLikeAttackers) != 0) return true;
+
+        // ROOK + QUEEN straight attacks
+        long rookLikeAttackers = byPieces[ROOK] | byPieces[QUEEN];
+        if ((getRookMoves(square, occupancy) & rookLikeAttackers) != 0) return true;
+
+        return false;
+    }
+
+    public static long getBishopMoves(int fromSquare, long occupancy) {
+        return hyperbolaQuintessence(fromSquare, DIAGONAL_MASKS_PER_SQUARE[fromSquare], occupancy) |
+                hyperbolaQuintessence(fromSquare, ANTI_DIAGONAL_MASKS_PER_SQUARE[fromSquare], occupancy);
+    }
+
+    public static long getRookMoves(int fromSquare, long occupancy) {
+        return hyperbolaQuintessence(fromSquare, RANK_MASKS_PER_SQUARE[fromSquare], occupancy) |
+                hyperbolaQuintessence(fromSquare, FILE_MASKS_PER_SQUARE[fromSquare], occupancy);
+    }
+
+    // Computes the sliding moves along a single line or diagonal
+    public static long hyperbolaQuintessence(int square, long mask, long occupancy) {
+        long occ = occupancy & mask;
+        long squareBB = SQUARE_BB_LOOK_UP[square];
+        long left = occ - 2*squareBB;
+        long right = Long.reverse(Long.reverse(occ) - 2*Long.reverse(squareBB));
+        return (left ^ right) & mask;
     }
 }

@@ -1,10 +1,10 @@
 package v5;
 
-import static com.MichaelFN.chess.v5.Bitboard.*;
+import static com.MichaelFN.chess.v5.board.Bitboard.*;
 import static com.MichaelFN.chess.v5.Constants.*;
 import static org.junit.jupiter.api.Assertions.*;
 
-import com.MichaelFN.chess.v5.Move;
+import com.MichaelFN.chess.v5.move.Move;
 import org.junit.jupiter.api.Test;
 
 public class MoveTest {
@@ -26,12 +26,12 @@ public class MoveTest {
 
     @Test
     public void testCaptureMove() {
-        int move = Move.createCapture(E3, D4, PAWN);
+        int move = Move.createCapture(E3, D4);
         assertTrue(Move.isCapture(move));
         assertFalse(Move.isPromotion(move));
         assertEquals(E3, Move.getFrom(move));
         assertEquals(D4, Move.getTo(move));
-        assertEquals("e3d4 (captures P)", Move.toString(move));
+        assertEquals("e3d4 (capture)", Move.toString(move));
     }
 
     @Test
@@ -63,7 +63,7 @@ public class MoveTest {
         int move = Move.createEnPassantCapture(E5, D6);
         assertTrue(Move.isCapture(move));
         assertTrue(Move.isEnPassant(move));
-        assertEquals("e5d6 (captures P) (en passant)", Move.toString(move));
+        assertEquals("e5d6 (capture) (en passant)", Move.toString(move));
     }
 
     @Test
@@ -83,11 +83,10 @@ public class MoveTest {
 
     @Test
     public void testPromotionCaptureMove() {
-        int move = Move.createPromotionCapture(E7, E8, QUEEN, BISHOP);
+        int move = Move.createPromotionCapture(E7, E8, QUEEN);
         assertTrue(Move.isCapture(move));
         assertTrue(Move.isPromotion(move));
-        assertEquals(BISHOP, Move.getCapturedPiece(move));
         assertEquals(QUEEN, Move.getPromotionPiece(move));
-        assertEquals("e7e8=Q (captures B)", Move.toString(move));
+        assertEquals("e7e8=Q (capture)", Move.toString(move));
     }
 }
