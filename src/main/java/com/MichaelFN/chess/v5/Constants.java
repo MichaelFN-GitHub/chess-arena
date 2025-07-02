@@ -26,6 +26,7 @@ public class Constants {
     public static final int DRAW = 3;
 
     // CASTLING
+    public static final int CASTLING_MASK = 0b1111;
     public static final int CASTLE_WHITE_KINGSIDE = 0b1000;
     public static final int CASTLE_WHITE_QUEENSIDE = 0b0100;
     public static final int CASTLE_WHITE = CASTLE_WHITE_KINGSIDE | CASTLE_WHITE_QUEENSIDE;

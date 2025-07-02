@@ -1,6 +1,9 @@
 package com.MichaelFN.chess.v5.board;
 
+import com.MichaelFN.chess.v5.Zobrist;
 import com.MichaelFN.chess.v5.Utils;
+
+import java.util.HashMap;
 
 import static com.MichaelFN.chess.v5.Constants.*;
 
@@ -49,5 +52,7 @@ public class BoardInitializer {
         board.halfmoveClock = Integer.parseInt(parts[4]);
         board.fullmoveNumber = Integer.parseInt(parts[5]);
         board.moveCounter = 0;
+        board.hashKey = Zobrist.computeHash(board);
+        board.repetitionCount = new HashMap<>(){{ put(board.hashKey, 1); }};
     }
 }

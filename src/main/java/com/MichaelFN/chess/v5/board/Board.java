@@ -2,6 +2,7 @@ package com.MichaelFN.chess.v5.board;
 
 import com.MichaelFN.chess.v5.Utils;
 import com.MichaelFN.chess.v5.Constants;
+import com.MichaelFN.chess.v5.Zobrist;
 import com.MichaelFN.chess.v5.move.Move;
 
 import java.util.Arrays;
@@ -30,7 +31,7 @@ public class Board {
     public int halfmoveClock;   // 0..50
     public int fullmoveNumber;  // 1..MAX_MOVES
     public int gameStatus;      // 0 = ongoing, 1 = white win, 2 = black win, 3 = draw
-    public final HashMap<Long,Integer> repetitionCount = new HashMap<>();
+    public HashMap<Long,Integer> repetitionCount = new HashMap<>();
 
     // History variables
     private final int[] moveHistory = new int[MAX_MOVES];
@@ -75,6 +76,7 @@ public class Board {
         enPassantSquareHistory[moveCounter] = enPassantSquare;
         halfmoveClockHistory[moveCounter] = halfmoveClock;
         fullmoveNumberHistory[moveCounter] = fullmoveNumber;
+        hashKeyHistory[moveCounter] = hashKey;
         capturedPieceHistory[moveCounter] = capturedPiece;
 
         // Move piece
@@ -82,6 +84,8 @@ public class Board {
         pieces[color][allPieces] ^= fromToBB;
         pieceAtSquare[from] = nonePiece;
         pieceAtSquare[to] = movedPiece;
+        hashKey = Zobrist.removePiece(hashKey, color, movedPiece, from);
+        hashKey = Zobrist.addPiece(hashKey, color, movedPiece, to);
 
         // Capture
         if (Move.isCapture(move)) {
@@ -89,18 +93,19 @@ public class Board {
 
             // En passant
             if (Move.isEnPassant(move)) {
-                capturedPiece = PAWN;
                 int captureSquare = enPassantSquare + (color == WHITE ? -8 : 8);
                 long captureSquareBB = Bitboard.SQUARE_BB_LOOK_UP[captureSquare];
                 pieces[enemyColor][capturedPiece] ^= captureSquareBB;
                 pieces[enemyColor][ALL_PIECES] ^= captureSquareBB;
                 pieceAtSquare[captureSquare] = nonePiece;
+                hashKey = Zobrist.removePiece(hashKey, enemyColor, capturedPiece, captureSquare);
             }
 
             // Normal capture
             else {
                 pieces[enemyColor][capturedPiece] ^= toBB;
                 pieces[enemyColor][allPieces] ^= toBB;
+                hashKey = Zobrist.removePiece(hashKey, enemyColor, capturedPiece, to);
             }
         }
 
@@ -114,6 +119,7 @@ public class Board {
         } else {
             enPassantSquare = -1;
         }
+        hashKey = Zobrist.updateEnPassant(hashKey, enPassantSquareHistory[moveCounter], enPassantSquare);
 
         // Promotion
         if (Move.isPromotion(move)) {
@@ -121,6 +127,8 @@ public class Board {
             pieces[color][PAWN] ^= toBB;
             pieces[color][promotionPiece] ^= toBB;
             pieceAtSquare[to] = promotionPiece;
+            hashKey = Zobrist.removePiece(hashKey, color, PAWN, to);
+            hashKey = Zobrist.addPiece(hashKey, color, promotionPiece, to);
         }
 
         // Castling
@@ -132,6 +140,8 @@ public class Board {
             pieces[color][ALL_PIECES] ^= rookMove;
             pieceAtSquare[rookFrom] = nonePiece;
             pieceAtSquare[rookTo] = ROOK;
+            hashKey = Zobrist.removePiece(hashKey, color, ROOK, rookFrom);
+            hashKey = Zobrist.addPiece(hashKey, color, ROOK, rookTo);
         } else if (Move.isCastleQueenSide(move)) {
             int rookFrom = (color == WHITE) ? Bitboard.A1 : Bitboard.A8;
             int rookTo   = (color == WHITE) ? Bitboard.D1 : Bitboard.D8;
@@ -140,6 +150,8 @@ public class Board {
             pieces[color][ALL_PIECES] ^= rookMove;
             pieceAtSquare[rookFrom] = nonePiece;
             pieceAtSquare[rookTo] = ROOK;
+            hashKey = Zobrist.removePiece(hashKey, color, ROOK, rookFrom);
+            hashKey = Zobrist.addPiece(hashKey, color, ROOK, rookTo);
         }
 
         // Castling rights
@@ -181,15 +193,20 @@ public class Board {
                 }
             }
         }
+        hashKey = Zobrist.updateCastlingRights(hashKey, castlingRightsHistory[moveCounter], castlingRights);
 
         // Fullmove number
         if (color == BLACK) fullmoveNumber++;
 
         // Change player to move
         playerToMove = enemyColor;
-        moveCounter++;
+        hashKey = Zobrist.toggleSideToMove(hashKey);
 
+        // Repetition count
         repetitionCount.put(hashKey, repetitionCount.getOrDefault(hashKey, 0) + 1);
+
+        // Move count
+        moveCounter++;
     }
 
     public void unmakeMove() {
@@ -266,6 +283,7 @@ public class Board {
             pieces[color][ALL_PIECES] ^= rookMove;
             pieceAtSquare[rookFrom] = ROOK;
             pieceAtSquare[rookTo] = Constants.NONE;
+
         } else if (Move.isCastleQueenSide(move)) {
             int rookFrom = (color == WHITE) ? Bitboard.A1 : Bitboard.A8;
             int rookTo   = (color == WHITE) ? Bitboard.D1 : Bitboard.D8;
