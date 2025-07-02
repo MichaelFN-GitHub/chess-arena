@@ -1,7 +1,7 @@
 package v5;
 
+import com.MichaelFN.chess.common.Perft;
 import com.MichaelFN.chess.v5.board.Board;
-import com.MichaelFN.chess.v5.move.MoveGenerator;
 import org.junit.jupiter.api.Test;
 
 import java.io.BufferedReader;
@@ -36,31 +36,10 @@ public class PerftTest {
                 String[] test = sections[i].split(" ");
                 int depth = Integer.parseInt(test[0].substring(1));
                 long expectedNodes = Long.parseLong(test[1]);
-                if (expectedNodes > 500000) break;
-                long computedNodes = 0;//perft(board, depth);
+                if (expectedNodes > 10000000) break;
+                long computedNodes = Perft.perft(board, depth);
                 assertEquals(expectedNodes, computedNodes, "Perft test failed on depth " + depth + " in the following position: " + FEN);
             }
         }
-    }
-
-    private long perft(Board board, int depth) {
-        /*
-        if (depth == 0) {
-            return 1;
-        }
-
-        long nodes = 0;
-        MoveGenerator.generateLegalMoves(board);
-        int[] moves = MoveGenerator.moves;
-        int n_moves = MoveGenerator.moveCounter;
-        for (int i = 0; i < n_moves; i++) {
-            int move = moves[i];
-            board.makeMove(move);
-            nodes += perft(boardState, depth - 1);
-            board.unmakeMove();
-        }
-
-        return nodes;
-         */
     }
 }

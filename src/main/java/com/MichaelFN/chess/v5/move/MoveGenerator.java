@@ -1,5 +1,7 @@
 package com.MichaelFN.chess.v5.move;
 
+import com.MichaelFN.chess.v5.Constants;
+import com.MichaelFN.chess.v5.Utils;
 import com.MichaelFN.chess.v5.board.Board;
 
 import static com.MichaelFN.chess.v5.Utils.*;
@@ -8,12 +10,58 @@ import static com.MichaelFN.chess.v5.Constants.*;
 import static com.MichaelFN.chess.v5.move.MoveTables.*;
 
 public class MoveGenerator {
-    public static int[] moves;
-    public static int moveCounter;
+    public int currentPly = 0;
 
-    public static void generatePseudoLegalMoves(Board board) {
-        moves = new int[MAX_MOVES_IN_POSITION];
-        moveCounter = 0;
+    public int[][] legalMoves = new int[MAX_PLY][MAX_MOVES_IN_POSITION];
+    public int[] legalMoveCounts = new int[MAX_PLY];
+
+    public int[][] pseudoMoves = new int[MAX_PLY][MAX_MOVES_IN_POSITION];
+    public int[] pseudoMoveCounts = new int[MAX_PLY];
+
+    private void addPseudoMove(int move) {
+        pseudoMoves[currentPly][pseudoMoveCounts[currentPly]++] = move;
+    }
+
+    private void addLegalMove(int move) {
+        legalMoves[currentPly][legalMoveCounts[currentPly]++] = move;
+    }
+
+    public void generateLegalMoves(Board board, int ply) {
+        legalMoveCounts[currentPly] = 0;
+
+        generatePseudoLegalMoves(board, ply);
+
+        int player = board.playerToMove;
+        int opponent = 1 - player;
+
+        for (int i = 0; i < pseudoMoveCounts[currentPly]; i++) {
+            int move = pseudoMoves[currentPly][i];
+
+            // Quick sanity: If move is king move, verify destination not attacked
+            int fromSquare = Move.getFrom(move);
+            int movedPiece = board.pieceAtSquare[fromSquare];
+            if (movedPiece == Constants.KING) {
+                int to = Move.getTo(move);
+                long occupancy = board.pieces[Constants.WHITE][Constants.ALL_PIECES] | board.pieces[Constants.BLACK][Constants.ALL_PIECES];
+                if (Utils.isSquareAttacked(board, to, opponent, occupancy)) {
+                    continue; // Skip illegal king move
+                }
+            }
+
+            board.makeMove(move);
+
+            // Check if king is attacked after move
+            if (!Utils.isInCheck(board, player)) {
+                addLegalMove(move);
+            }
+            board.unmakeMove();
+        }
+    }
+
+
+    public void generatePseudoLegalMoves(Board board, int ply) {
+        currentPly = ply;
+        pseudoMoveCounts[ply] = 0;
 
         int player = board.playerToMove;
         int opponent = 1 - board.playerToMove;
@@ -33,9 +81,9 @@ public class MoveGenerator {
         generateCastlingMoves(occupancy, board.castlingRights, player, board);
     }
 
-    public static void generatePseudoLegalCaptures(Board board) {
-        moves = new int[MAX_MOVES_IN_POSITION];
-        moveCounter = 0;
+    public void generatePseudoLegalCaptures(Board board, int ply) {
+        currentPly = ply;
+        pseudoMoveCounts[currentPly] = 0;
 
         int player = board.playerToMove;
         int opponent = 1 - board.playerToMove;
@@ -53,7 +101,7 @@ public class MoveGenerator {
         generateKingCaptures(pieces[KING], enemies);
     }
 
-    private static void generateCastlingMoves(long occupancy, int castlingRights, int color, Board board) {
+    private void generateCastlingMoves(long occupancy, int castlingRights, int color, Board board) {
         // White Castling
         if (color == WHITE) {
             // Kingside
@@ -65,7 +113,7 @@ public class MoveGenerator {
                                 isSquareAttacked(board, G1, BLACK, occupancy)
                 );
                 if (empty && safe) {
-                    addMove(Move.createCastleKingSide(E1, G1));
+                    addPseudoMove(Move.createCastleKingSide(E1, G1));
                 }
             }
 
@@ -78,7 +126,7 @@ public class MoveGenerator {
                                 isSquareAttacked(board, C1, BLACK, occupancy)
                 );
                 if (empty && safe) {
-                    addMove(Move.createCastleQueenSide(E1, C1));
+                    addPseudoMove(Move.createCastleQueenSide(E1, C1));
                 }
             }
         }
@@ -94,7 +142,7 @@ public class MoveGenerator {
                                 isSquareAttacked(board, G8, WHITE, occupancy)
                 );
                 if (empty && safe) {
-                    addMove(Move.createCastleKingSide(E8, G8));
+                    addPseudoMove(Move.createCastleKingSide(E8, G8));
                 }
             }
 
@@ -107,13 +155,13 @@ public class MoveGenerator {
                                 isSquareAttacked(board, C8, WHITE, occupancy)
                 );
                 if (empty && safe) {
-                    addMove(Move.createCastleQueenSide(E8, C8));
+                    addPseudoMove(Move.createCastleQueenSide(E8, C8));
                 }
             }
         }
     }
 
-    private static void generateKingMoves(long king, long allies, long enemies) {
+    private void generateKingMoves(long king, long allies, long enemies) {
         int fromSquare = lsb(king);
         long moves = KING_MOVE_MASKS[fromSquare] & ~allies;
 
@@ -123,33 +171,33 @@ public class MoveGenerator {
             int move = isCapture
                     ? Move.createCapture(fromSquare, toSquare)
                     : Move.createQuietMove(fromSquare, toSquare);
-            addMove(move);
+            addPseudoMove(move);
             moves = clearLsb(moves);
         }
     }
 
-    private static void generateKingCaptures(long king, long enemies) {
+    private void generateKingCaptures(long king, long enemies) {
         int fromSquare = lsb(king);
         long moves = KING_MOVE_MASKS[fromSquare] & enemies;
         while (moves != 0) {
             int toSquare = lsb(moves);
             int move = Move.createCapture(fromSquare, toSquare);
-            addMove(move);
+            addPseudoMove(move);
             moves = clearLsb(moves);
         }
     }
 
-    private static void generateQueenMoves(long queens, long allies, long enemies, long occupancy) {
+    private void generateQueenMoves(long queens, long allies, long enemies, long occupancy) {
         generateBishopMoves(queens, allies, enemies, occupancy);
         generateRookMoves(queens, allies, enemies, occupancy);
     }
 
-    private static void generateQueenCaptures(long queens, long enemies, long occupancy) {
+    private void generateQueenCaptures(long queens, long enemies, long occupancy) {
         generateBishopCaptures(queens, enemies, occupancy);
         generateRookCaptures(queens, enemies, occupancy);
     }
 
-    private static void generateBishopMoves(long bishops, long allies, long enemies, long occupancy) {
+    private void generateBishopMoves(long bishops, long allies, long enemies, long occupancy) {
         while (bishops != 0) {
             int fromSquare = lsb(bishops);
             long moves = getBishopMoves(fromSquare, occupancy) & ~allies;
@@ -160,7 +208,7 @@ public class MoveGenerator {
                 int move = isCapture
                         ? Move.createCapture(fromSquare, toSquare)
                         : Move.createQuietMove(fromSquare, toSquare);
-                addMove(move);
+                addPseudoMove(move);
                 moves = clearLsb(moves);
             }
 
@@ -168,7 +216,7 @@ public class MoveGenerator {
         }
     }
 
-    private static void generateBishopCaptures(long bishops, long enemies, long occupancy) {
+    private void generateBishopCaptures(long bishops, long enemies, long occupancy) {
         while (bishops != 0) {
             int fromSquare = lsb(bishops);
             long moves = getBishopMoves(fromSquare, occupancy) & enemies;
@@ -176,7 +224,7 @@ public class MoveGenerator {
             while (moves != 0) {
                 int toSquare = lsb(moves);
                 int move = Move.createCapture(fromSquare, toSquare);
-                addMove(move);
+                addPseudoMove(move);
                 moves = clearLsb(moves);
             }
 
@@ -184,7 +232,7 @@ public class MoveGenerator {
         }
     }
 
-    private static void generateRookMoves(long rooks, long allies, long enemies, long occupancy) {
+    private void generateRookMoves(long rooks, long allies, long enemies, long occupancy) {
         while (rooks != 0) {
             int fromSquare = lsb(rooks);
             long moves = getRookMoves(fromSquare, occupancy) & ~allies;
@@ -195,7 +243,7 @@ public class MoveGenerator {
                 int move = isCapture
                         ? Move.createCapture(fromSquare, toSquare)
                         : Move.createQuietMove(fromSquare, toSquare);
-                addMove(move);
+                addPseudoMove(move);
                 moves = clearLsb(moves);
             }
 
@@ -203,7 +251,7 @@ public class MoveGenerator {
         }
     }
 
-    private static void generateRookCaptures(long rooks, long enemies, long occupancy) {
+    private void generateRookCaptures(long rooks, long enemies, long occupancy) {
         while (rooks != 0) {
             int fromSquare = lsb(rooks);
             long moves = getRookMoves(fromSquare, occupancy) & enemies;
@@ -211,7 +259,7 @@ public class MoveGenerator {
             while (moves != 0) {
                 int toSquare = lsb(moves);
                 int move = Move.createCapture(fromSquare, toSquare);
-                addMove(move);
+                addPseudoMove(move);
                 moves = clearLsb(moves);
             }
 
@@ -219,7 +267,7 @@ public class MoveGenerator {
         }
     }
 
-    private static void generateKnightMoves(long knights, long allies, long enemies) {
+    private void generateKnightMoves(long knights, long allies, long enemies) {
         while (knights != 0) {
             int fromSquare = lsb(knights);
             long targets = ~(allies);
@@ -231,7 +279,7 @@ public class MoveGenerator {
                 int move = isCapture
                         ? Move.createCapture(fromSquare, toSquare)
                         : Move.createQuietMove(fromSquare, toSquare);
-                addMove(move);
+                addPseudoMove(move);
                 moves = clearLsb(moves);
             }
 
@@ -239,7 +287,7 @@ public class MoveGenerator {
         }
     }
 
-    private static void generateKnightCaptures(long knights, long enemies) {
+    private void generateKnightCaptures(long knights, long enemies) {
         while (knights != 0) {
             int fromSquare = lsb(knights);
             long moves = KNIGHT_MOVE_MASKS[fromSquare] & enemies;
@@ -247,35 +295,38 @@ public class MoveGenerator {
             while (moves != 0) {
                 int toSquare = lsb(moves);
                 int move = Move.createCapture(fromSquare, toSquare);
-                addMove(move);
+                addPseudoMove(move);
                 moves = clearLsb(moves);
             }
             knights = clearLsb(knights);
         }
     }
 
-    private static void generatePawnMoves(long pawns, int color, long empty, long enemies, int enPassantSquare) {
+    private void generatePawnMoves(long pawns, int color, long empty, long enemies, int enPassantSquare) {
         long enPassantBB = enPassantSquare == -1 ? 0 : SQUARE_BB_LOOK_UP[enPassantSquare];
 
         if (color == WHITE) {
             long singlePushes = (pawns << 8) & empty;
-            long doublePushes = ((singlePushes & RANK_3) << 8) & empty;
-            long leftCaptures = ((pawns << 7) & enemies) & ~FILE_H;
-            long rightCaptures = ((pawns << 9) & enemies) & ~FILE_A;
-            long enPassantLeftCaptures = ((pawns << 7) & enPassantBB) & ~FILE_H;
-            long enPassantRightCaptures = ((pawns << 9) & enPassantBB) & ~FILE_A;
+            long doublePushes = ((pawns & RANK_2) << 8 & empty) << 8 & empty;
+
+            long leftCaptures = (pawns << 7) & enemies & ~FILE_H;
+            long rightCaptures = (pawns << 9) & enemies & ~FILE_A;
+
+            long enPassantLeftCaptures  = (pawns << 7) & enPassantBB & ~FILE_H;
+            long enPassantRightCaptures = (pawns << 9) & enPassantBB & ~FILE_A;
+
 
             // Loop through each move and create it
             while (singlePushes != 0) {
                 int toSquare = lsb(singlePushes);
                 int fromSquare = toSquare - 8;
                 if (toSquare > 55) {
-                    addMove(Move.createPromotionMove(fromSquare, toSquare, QUEEN));
-                    addMove(Move.createPromotionMove(fromSquare, toSquare, ROOK));
-                    addMove(Move.createPromotionMove(fromSquare, toSquare, BISHOP));
-                    addMove(Move.createPromotionMove(fromSquare, toSquare, KNIGHT));
+                    addPseudoMove(Move.createPromotionMove(fromSquare, toSquare, QUEEN));
+                    addPseudoMove(Move.createPromotionMove(fromSquare, toSquare, ROOK));
+                    addPseudoMove(Move.createPromotionMove(fromSquare, toSquare, BISHOP));
+                    addPseudoMove(Move.createPromotionMove(fromSquare, toSquare, KNIGHT));
                 } else {
-                    addMove(Move.createQuietMove(fromSquare, toSquare));
+                    addPseudoMove(Move.createQuietMove(fromSquare, toSquare));
                 }
                 singlePushes = clearLsb(singlePushes);
             }
@@ -284,7 +335,7 @@ public class MoveGenerator {
                 int toSquare = lsb(doublePushes);
                 int fromSquare = toSquare - 16;
                 int move = Move.createDoublePawnPush(fromSquare, toSquare);
-                addMove(move);
+                addPseudoMove(move);
                 doublePushes = clearLsb(doublePushes);
             }
 
@@ -292,12 +343,12 @@ public class MoveGenerator {
                 int toSquare = lsb(leftCaptures);
                 int fromSquare = toSquare - 7;
                 if (toSquare > 55) {
-                    addMove(Move.createPromotionCapture(fromSquare, toSquare, QUEEN));
-                    addMove(Move.createPromotionCapture(fromSquare, toSquare, ROOK));
-                    addMove(Move.createPromotionCapture(fromSquare, toSquare, BISHOP));
-                    addMove(Move.createPromotionCapture(fromSquare, toSquare, KNIGHT));
+                    addPseudoMove(Move.createPromotionCapture(fromSquare, toSquare, QUEEN));
+                    addPseudoMove(Move.createPromotionCapture(fromSquare, toSquare, ROOK));
+                    addPseudoMove(Move.createPromotionCapture(fromSquare, toSquare, BISHOP));
+                    addPseudoMove(Move.createPromotionCapture(fromSquare, toSquare, KNIGHT));
                 } else {
-                    addMove(Move.createCapture(fromSquare, toSquare));
+                    addPseudoMove(Move.createCapture(fromSquare, toSquare));
                 }
                 leftCaptures = clearLsb(leftCaptures);
             }
@@ -306,12 +357,12 @@ public class MoveGenerator {
                 int toSquare = lsb(rightCaptures);
                 int fromSquare = toSquare - 9;
                 if (toSquare > 55) {
-                    addMove(Move.createPromotionCapture(fromSquare, toSquare, QUEEN));
-                    addMove(Move.createPromotionCapture(fromSquare, toSquare, ROOK));
-                    addMove(Move.createPromotionCapture(fromSquare, toSquare, BISHOP));
-                    addMove(Move.createPromotionCapture(fromSquare, toSquare, KNIGHT));
+                    addPseudoMove(Move.createPromotionCapture(fromSquare, toSquare, QUEEN));
+                    addPseudoMove(Move.createPromotionCapture(fromSquare, toSquare, ROOK));
+                    addPseudoMove(Move.createPromotionCapture(fromSquare, toSquare, BISHOP));
+                    addPseudoMove(Move.createPromotionCapture(fromSquare, toSquare, KNIGHT));
                 } else {
-                    addMove(Move.createCapture(fromSquare, toSquare));
+                    addPseudoMove(Move.createCapture(fromSquare, toSquare));
                 }
                 rightCaptures = clearLsb(rightCaptures);
             }
@@ -320,7 +371,7 @@ public class MoveGenerator {
                 int toSquare = lsb(enPassantLeftCaptures);
                 int fromSquare = toSquare - 7;
                 int move = Move.createEnPassantCapture(fromSquare, toSquare);
-                addMove(move);
+                addPseudoMove(move);
                 enPassantLeftCaptures = clearLsb(enPassantLeftCaptures);
             }
 
@@ -328,7 +379,7 @@ public class MoveGenerator {
                 int toSquare = lsb(enPassantRightCaptures);
                 int fromSquare = toSquare - 9;
                 int move = Move.createEnPassantCapture(fromSquare, toSquare);
-                addMove(move);
+                addPseudoMove(move);
                 enPassantRightCaptures = clearLsb(enPassantRightCaptures);
             }
         }
@@ -336,23 +387,25 @@ public class MoveGenerator {
         // Black
         else {
             long singlePushes = (pawns >>> 8) & empty;
-            long doublePushes = ((singlePushes & RANK_6) >>> 8) & empty;
-            long leftCaptures  = ((pawns >>> 9) & enemies) & ~FILE_H;
-            long rightCaptures = ((pawns >>> 7) & enemies) & ~FILE_A;
-            long enPassantLeftCaptures = ((pawns >>> 9) & enPassantBB) & ~FILE_H;
-            long enPassantRightCaptures = ((pawns >>> 7) & enPassantBB) & ~FILE_A;
+            long doublePushes = ((pawns & RANK_7) >>> 8 & empty) >>> 8 & empty;
+
+            long leftCaptures  = (pawns >>> 9) & enemies & ~FILE_H;
+            long rightCaptures = (pawns >>> 7) & enemies & ~FILE_A;
+
+            long enPassantLeftCaptures  = (pawns >>> 9) & enPassantBB & ~FILE_H;
+            long enPassantRightCaptures = (pawns >>> 7) & enPassantBB & ~FILE_A;
 
             // Loop through each move and create it
             while (singlePushes != 0) {
                 int toSquare = lsb(singlePushes);
                 int fromSquare = toSquare + 8;
                 if (toSquare < 8) {
-                    addMove(Move.createPromotionMove(fromSquare, toSquare, QUEEN));
-                    addMove(Move.createPromotionMove(fromSquare, toSquare, ROOK));
-                    addMove(Move.createPromotionMove(fromSquare, toSquare, BISHOP));
-                    addMove(Move.createPromotionMove(fromSquare, toSquare, KNIGHT));
+                    addPseudoMove(Move.createPromotionMove(fromSquare, toSquare, QUEEN));
+                    addPseudoMove(Move.createPromotionMove(fromSquare, toSquare, ROOK));
+                    addPseudoMove(Move.createPromotionMove(fromSquare, toSquare, BISHOP));
+                    addPseudoMove(Move.createPromotionMove(fromSquare, toSquare, KNIGHT));
                 } else {
-                    addMove(Move.createQuietMove(fromSquare, toSquare));
+                    addPseudoMove(Move.createQuietMove(fromSquare, toSquare));
                 }
                 singlePushes = clearLsb(singlePushes);
             }
@@ -361,57 +414,57 @@ public class MoveGenerator {
                 int toSquare = lsb(doublePushes);
                 int fromSquare = toSquare + 16;
                 int move = Move.createDoublePawnPush(fromSquare, toSquare);
-                addMove(move);
+                addPseudoMove(move);
                 doublePushes = clearLsb(doublePushes);
             }
 
             while (leftCaptures != 0) {
                 int toSquare = lsb(leftCaptures);
-                int fromSquare = toSquare + 7;
+                int fromSquare = toSquare + 9;
                 if (toSquare < 8) {
-                    addMove(Move.createPromotionCapture(fromSquare, toSquare, QUEEN));
-                    addMove(Move.createPromotionCapture(fromSquare, toSquare, ROOK));
-                    addMove(Move.createPromotionCapture(fromSquare, toSquare, BISHOP));
-                    addMove(Move.createPromotionCapture(fromSquare, toSquare, KNIGHT));
+                    addPseudoMove(Move.createPromotionCapture(fromSquare, toSquare, QUEEN));
+                    addPseudoMove(Move.createPromotionCapture(fromSquare, toSquare, ROOK));
+                    addPseudoMove(Move.createPromotionCapture(fromSquare, toSquare, BISHOP));
+                    addPseudoMove(Move.createPromotionCapture(fromSquare, toSquare, KNIGHT));
                 } else {
-                    addMove(Move.createCapture(fromSquare, toSquare));
+                    addPseudoMove(Move.createCapture(fromSquare, toSquare));
                 }
                 leftCaptures = clearLsb(leftCaptures);
             }
 
             while (rightCaptures != 0) {
                 int toSquare = lsb(rightCaptures);
-                int fromSquare = toSquare + 9;
+                int fromSquare = toSquare + 7;
                 if (toSquare < 8) {
-                    addMove(Move.createPromotionCapture(fromSquare, toSquare, QUEEN));
-                    addMove(Move.createPromotionCapture(fromSquare, toSquare, ROOK));
-                    addMove(Move.createPromotionCapture(fromSquare, toSquare, BISHOP));
-                    addMove(Move.createPromotionCapture(fromSquare, toSquare, KNIGHT));
+                    addPseudoMove(Move.createPromotionCapture(fromSquare, toSquare, QUEEN));
+                    addPseudoMove(Move.createPromotionCapture(fromSquare, toSquare, ROOK));
+                    addPseudoMove(Move.createPromotionCapture(fromSquare, toSquare, BISHOP));
+                    addPseudoMove(Move.createPromotionCapture(fromSquare, toSquare, KNIGHT));
                 } else {
-                    addMove(Move.createCapture(fromSquare, toSquare));
+                    addPseudoMove(Move.createCapture(fromSquare, toSquare));
                 }
                 rightCaptures = clearLsb(rightCaptures);
             }
 
             while (enPassantLeftCaptures != 0) {
                 int toSquare = lsb(enPassantLeftCaptures);
-                int fromSquare = toSquare + 7;
+                int fromSquare = toSquare + 9;
                 int move = Move.createEnPassantCapture(fromSquare, toSquare);
-                addMove(move);
+                addPseudoMove(move);
                 enPassantLeftCaptures = clearLsb(enPassantLeftCaptures);
             }
 
             while (enPassantRightCaptures != 0) {
                 int toSquare = lsb(enPassantRightCaptures);
-                int fromSquare = toSquare + 9;
+                int fromSquare = toSquare + 7;
                 int move = Move.createEnPassantCapture(fromSquare, toSquare);
-                addMove(move);
+                addPseudoMove(move);
                 enPassantRightCaptures = clearLsb(enPassantRightCaptures);
             }
         }
     }
 
-    private static void generatePawnCaptures(long pawns, int color, long enemies, int enPassantSquare) {
+    private void generatePawnCaptures(long pawns, int color, long enemies, int enPassantSquare) {
         long enPassantBB = SQUARE_BB_LOOK_UP[enPassantSquare];
 
         if (color == WHITE) {
@@ -424,7 +477,7 @@ public class MoveGenerator {
                 int toSquare = lsb(leftCaptures);
                 int fromSquare = toSquare - 7;
                 int move = Move.createCapture(fromSquare, toSquare);
-                addMove(move);
+                addPseudoMove(move);
                 leftCaptures = clearLsb(leftCaptures);
             }
 
@@ -432,7 +485,7 @@ public class MoveGenerator {
                 int toSquare = lsb(rightCaptures);
                 int fromSquare = toSquare - 9;
                 int move = Move.createCapture(fromSquare, toSquare);
-                addMove(move);
+                addPseudoMove(move);
                 rightCaptures = clearLsb(rightCaptures);
             }
 
@@ -440,7 +493,7 @@ public class MoveGenerator {
                 int toSquare = lsb(enPassantLeftCaptures);
                 int fromSquare = toSquare - 7;
                 int move = Move.createEnPassantCapture(fromSquare, toSquare);
-                addMove(move);
+                addPseudoMove(move);
                 enPassantLeftCaptures = clearLsb(enPassantLeftCaptures);
             }
 
@@ -448,7 +501,7 @@ public class MoveGenerator {
                 int toSquare = lsb(enPassantRightCaptures);
                 int fromSquare = toSquare - 9;
                 int move = Move.createEnPassantCapture(fromSquare, toSquare);
-                addMove(move);
+                addPseudoMove(move);
                 enPassantRightCaptures = clearLsb(enPassantRightCaptures);
             }
         }
@@ -464,7 +517,7 @@ public class MoveGenerator {
                 int toSquare = lsb(leftCaptures);
                 int fromSquare = toSquare + 7;
                 int move = Move.createCapture(fromSquare, toSquare);
-                addMove(move);
+                addPseudoMove(move);
                 leftCaptures = clearLsb(leftCaptures);
             }
 
@@ -472,7 +525,7 @@ public class MoveGenerator {
                 int toSquare = lsb(rightCaptures);
                 int fromSquare = toSquare + 9;
                 int move = Move.createCapture(fromSquare, toSquare);
-                addMove(move);
+                addPseudoMove(move);
                 rightCaptures = clearLsb(rightCaptures);
             }
 
@@ -480,7 +533,7 @@ public class MoveGenerator {
                 int toSquare = lsb(enPassantLeftCaptures);
                 int fromSquare = toSquare + 7;
                 int move = Move.createEnPassantCapture(fromSquare, toSquare);
-                addMove(move);
+                addPseudoMove(move);
                 enPassantLeftCaptures = clearLsb(enPassantLeftCaptures);
             }
 
@@ -488,13 +541,9 @@ public class MoveGenerator {
                 int toSquare = lsb(enPassantRightCaptures);
                 int fromSquare = toSquare + 9;
                 int move = Move.createEnPassantCapture(fromSquare, toSquare);
-                addMove(move);
+                addPseudoMove(move);
                 enPassantRightCaptures = clearLsb(enPassantRightCaptures);
             }
         }
-    }
-
-    private static void addMove(int move) {
-        moves[moveCounter++] = move;
     }
 }

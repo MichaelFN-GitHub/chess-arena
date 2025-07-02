@@ -34,6 +34,7 @@ public class BoardInitializer {
                     long bb = Bitboard.squareToBitboard(square);
                     board.pieces[pieceColor][pieceType] |= bb;
                     board.pieces[pieceColor][ALL_PIECES] |= bb;
+                    board.pieceAtSquare[square] = pieceType;
                     col++;
                 }
             }
@@ -47,5 +48,6 @@ public class BoardInitializer {
         board.enPassantSquare = parts[3].equals("-") ? -1 : Utils.algebraicToSquare(parts[3]);
         board.halfmoveClock = Integer.parseInt(parts[4]);
         board.fullmoveNumber = Integer.parseInt(parts[5]);
+        board.moveCounter = 0;
     }
 }

@@ -1,5 +1,6 @@
 package com.MichaelFN.chess.v5;
 
+import com.MichaelFN.chess.v5.board.Bitboard;
 import com.MichaelFN.chess.v5.board.Board;
 
 import static com.MichaelFN.chess.v5.Constants.*;
@@ -35,11 +36,31 @@ public class Utils {
         };
     }
 
+    public static char pieceTypeToChar(int pieceType, int color) {
+        char c = switch (pieceType) {
+            case 1 -> 'P';
+            case 2 -> 'N';
+            case 3 -> 'B';
+            case 4 -> 'R';
+            case 5 -> 'Q';
+            case 6 -> 'K';
+            default -> '.';
+        };
+        return color == 0 ? c : Character.toLowerCase(c);
+    }
+
     public static int algebraicToSquare(String sq) {
         int file = sq.charAt(0) - 'a';
         int rank = sq.charAt(1) - '1';
         return rank * 8 + file;
     }
+
+    public static String squareToAlgebraic(int square) {
+        int file = square % 8;
+        int rank = square / 8;
+        return "" + (char) ('a' + file) + (rank + 1);
+    }
+
 
     public static boolean isSquareAttacked(Board board, int square, int byColor, long occupancy) {
         long[] byPieces = board.pieces[byColor];
@@ -63,6 +84,16 @@ public class Utils {
         if ((getRookMoves(square, occupancy) & rookLikeAttackers) != 0) return true;
 
         return false;
+    }
+
+    public static boolean isInCheck(Board board, int color) {
+        int enemyColor = 1 - color;
+
+        long kingBB = board.pieces[color][Constants.KING];
+        int kingSquare = Bitboard.lsb(kingBB);
+        long occupancy = board.pieces[Constants.WHITE][Constants.ALL_PIECES] | board.pieces[Constants.BLACK][Constants.ALL_PIECES];
+
+        return isSquareAttacked(board, kingSquare, enemyColor, occupancy);
     }
 
     public static long getBishopMoves(int fromSquare, long occupancy) {
