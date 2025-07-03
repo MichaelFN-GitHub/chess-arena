@@ -203,6 +203,7 @@ public class Board {
         hashKey = Zobrist.toggleSideToMove(hashKey);
 
         // Repetition count
+        //hashKey = Zobrist.computeHash(this);
         repetitionCount.put(hashKey, repetitionCount.getOrDefault(hashKey, 0) + 1);
 
         // Move count

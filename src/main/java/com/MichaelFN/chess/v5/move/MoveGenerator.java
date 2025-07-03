@@ -10,7 +10,7 @@ import static com.MichaelFN.chess.v5.Constants.*;
 import static com.MichaelFN.chess.v5.move.MoveTables.*;
 
 public class MoveGenerator {
-    public int currentPly = 0;
+    private int currentPly = 0;
 
     public int[][] legalMoves = new int[MAX_PLY][MAX_MOVES_IN_POSITION];
     public int[] legalMoveCounts = new int[MAX_PLY];
@@ -58,6 +58,37 @@ public class MoveGenerator {
         }
     }
 
+    public void generateLegalCaptures(Board board, int ply) {
+        legalMoveCounts[currentPly] = 0;
+
+        generatePseudoLegalCaptures(board, ply);
+
+        int player = board.playerToMove;
+        int opponent = 1 - player;
+
+        for (int i = 0; i < pseudoMoveCounts[currentPly]; i++) {
+            int move = pseudoMoves[currentPly][i];
+
+            // Quick sanity: If move is king move, verify destination not attacked
+            int fromSquare = Move.getFrom(move);
+            int movedPiece = board.pieceAtSquare[fromSquare];
+            if (movedPiece == Constants.KING) {
+                int to = Move.getTo(move);
+                long occupancy = board.pieces[Constants.WHITE][Constants.ALL_PIECES] | board.pieces[Constants.BLACK][Constants.ALL_PIECES];
+                if (Utils.isSquareAttacked(board, to, opponent, occupancy)) {
+                    continue; // Skip illegal king move
+                }
+            }
+
+            board.makeMove(move);
+
+            // Check if king is attacked after move
+            if (!Utils.isInCheck(board, player)) {
+                addLegalMove(move);
+            }
+            board.unmakeMove();
+        }
+    }
 
     public void generatePseudoLegalMoves(Board board, int ply) {
         currentPly = ply;
@@ -465,27 +496,42 @@ public class MoveGenerator {
     }
 
     private void generatePawnCaptures(long pawns, int color, long enemies, int enPassantSquare) {
-        long enPassantBB = SQUARE_BB_LOOK_UP[enPassantSquare];
+        long enPassantBB = enPassantSquare == -1 ? 0 : SQUARE_BB_LOOK_UP[enPassantSquare];
 
         if (color == WHITE) {
-            long leftCaptures = ((pawns << 7) & enemies) & ~FILE_H;
-            long rightCaptures = ((pawns << 9) & enemies) & ~FILE_A;
-            long enPassantLeftCaptures = ((pawns << 7) & enPassantBB) & ~FILE_H;
-            long enPassantRightCaptures = ((pawns << 9) & enPassantBB) & ~FILE_A;
+            long leftCaptures = (pawns << 7) & enemies & ~FILE_H;
+            long rightCaptures = (pawns << 9) & enemies & ~FILE_A;
 
+            long enPassantLeftCaptures  = (pawns << 7) & enPassantBB & ~FILE_H;
+            long enPassantRightCaptures = (pawns << 9) & enPassantBB & ~FILE_A;
+
+
+            // Loop through each move and create it
             while (leftCaptures != 0) {
                 int toSquare = lsb(leftCaptures);
                 int fromSquare = toSquare - 7;
-                int move = Move.createCapture(fromSquare, toSquare);
-                addPseudoMove(move);
+                if (toSquare > 55) {
+                    addPseudoMove(Move.createPromotionCapture(fromSquare, toSquare, QUEEN));
+                    addPseudoMove(Move.createPromotionCapture(fromSquare, toSquare, ROOK));
+                    addPseudoMove(Move.createPromotionCapture(fromSquare, toSquare, BISHOP));
+                    addPseudoMove(Move.createPromotionCapture(fromSquare, toSquare, KNIGHT));
+                } else {
+                    addPseudoMove(Move.createCapture(fromSquare, toSquare));
+                }
                 leftCaptures = clearLsb(leftCaptures);
             }
 
             while (rightCaptures != 0) {
                 int toSquare = lsb(rightCaptures);
                 int fromSquare = toSquare - 9;
-                int move = Move.createCapture(fromSquare, toSquare);
-                addPseudoMove(move);
+                if (toSquare > 55) {
+                    addPseudoMove(Move.createPromotionCapture(fromSquare, toSquare, QUEEN));
+                    addPseudoMove(Move.createPromotionCapture(fromSquare, toSquare, ROOK));
+                    addPseudoMove(Move.createPromotionCapture(fromSquare, toSquare, BISHOP));
+                    addPseudoMove(Move.createPromotionCapture(fromSquare, toSquare, KNIGHT));
+                } else {
+                    addPseudoMove(Move.createCapture(fromSquare, toSquare));
+                }
                 rightCaptures = clearLsb(rightCaptures);
             }
 
@@ -510,28 +556,42 @@ public class MoveGenerator {
         else {
             long leftCaptures  = (pawns >>> 9) & enemies & ~FILE_H;
             long rightCaptures = (pawns >>> 7) & enemies & ~FILE_A;
-            long enPassantLeftCaptures = ((pawns >>> 9) & enPassantBB) & ~FILE_H;
-            long enPassantRightCaptures = ((pawns >>> 7) & enPassantBB) & ~FILE_A;
 
+            long enPassantLeftCaptures  = (pawns >>> 9) & enPassantBB & ~FILE_H;
+            long enPassantRightCaptures = (pawns >>> 7) & enPassantBB & ~FILE_A;
+
+            // Loop through each move and create it
             while (leftCaptures != 0) {
                 int toSquare = lsb(leftCaptures);
-                int fromSquare = toSquare + 7;
-                int move = Move.createCapture(fromSquare, toSquare);
-                addPseudoMove(move);
+                int fromSquare = toSquare + 9;
+                if (toSquare < 8) {
+                    addPseudoMove(Move.createPromotionCapture(fromSquare, toSquare, QUEEN));
+                    addPseudoMove(Move.createPromotionCapture(fromSquare, toSquare, ROOK));
+                    addPseudoMove(Move.createPromotionCapture(fromSquare, toSquare, BISHOP));
+                    addPseudoMove(Move.createPromotionCapture(fromSquare, toSquare, KNIGHT));
+                } else {
+                    addPseudoMove(Move.createCapture(fromSquare, toSquare));
+                }
                 leftCaptures = clearLsb(leftCaptures);
             }
 
             while (rightCaptures != 0) {
                 int toSquare = lsb(rightCaptures);
-                int fromSquare = toSquare + 9;
-                int move = Move.createCapture(fromSquare, toSquare);
-                addPseudoMove(move);
+                int fromSquare = toSquare + 7;
+                if (toSquare < 8) {
+                    addPseudoMove(Move.createPromotionCapture(fromSquare, toSquare, QUEEN));
+                    addPseudoMove(Move.createPromotionCapture(fromSquare, toSquare, ROOK));
+                    addPseudoMove(Move.createPromotionCapture(fromSquare, toSquare, BISHOP));
+                    addPseudoMove(Move.createPromotionCapture(fromSquare, toSquare, KNIGHT));
+                } else {
+                    addPseudoMove(Move.createCapture(fromSquare, toSquare));
+                }
                 rightCaptures = clearLsb(rightCaptures);
             }
 
             while (enPassantLeftCaptures != 0) {
                 int toSquare = lsb(enPassantLeftCaptures);
-                int fromSquare = toSquare + 7;
+                int fromSquare = toSquare + 9;
                 int move = Move.createEnPassantCapture(fromSquare, toSquare);
                 addPseudoMove(move);
                 enPassantLeftCaptures = clearLsb(enPassantLeftCaptures);
@@ -539,7 +599,7 @@ public class MoveGenerator {
 
             while (enPassantRightCaptures != 0) {
                 int toSquare = lsb(enPassantRightCaptures);
-                int fromSquare = toSquare + 9;
+                int fromSquare = toSquare + 7;
                 int move = Move.createEnPassantCapture(fromSquare, toSquare);
                 addPseudoMove(move);
                 enPassantRightCaptures = clearLsb(enPassantRightCaptures);

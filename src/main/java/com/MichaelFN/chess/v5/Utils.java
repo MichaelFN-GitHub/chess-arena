@@ -2,6 +2,7 @@ package com.MichaelFN.chess.v5;
 
 import com.MichaelFN.chess.v5.board.Bitboard;
 import com.MichaelFN.chess.v5.board.Board;
+import com.MichaelFN.chess.v5.move.Move;
 
 import static com.MichaelFN.chess.v5.Constants.*;
 import static com.MichaelFN.chess.v5.board.Bitboard.*;
@@ -26,7 +27,7 @@ public class Utils {
 
     public static int charToPieceType(char c) {
         return switch (Character.toLowerCase(c)) {
-            case 'p' -> PAWN;
+            case 'p' -> Constants.PAWN;
             case 'n' -> Constants.KNIGHT;
             case 'b' -> Constants.BISHOP;
             case 'r' -> Constants.ROOK;
@@ -113,5 +114,107 @@ public class Utils {
         long left = occ - 2*squareBB;
         long right = Long.reverse(Long.reverse(occ) - 2*Long.reverse(squareBB));
         return (left ^ right) & mask;
+    }
+
+    public static String moveToUci(int move, Board board) {
+        int from = Move.getFrom(move);
+        int to = Move.getTo(move);
+
+        String fromSq = SQUARE_NAMES[from];
+        String toSq = SQUARE_NAMES[to];
+
+        StringBuilder sb = new StringBuilder(fromSq).append(toSq);
+
+        if (Move.isPromotion(move)) {
+            int promo = Move.getPromotionPiece(move);
+            char promoChar = pieceTypeToChar(promo, board.playerToMove);
+            sb.append(promoChar);
+        }
+
+        return sb.toString();
+    }
+
+    public static int uciToMove(String uci, Board board) {
+        int from = algebraicToSquare(uci.substring(0, 2));
+        int to = algebraicToSquare(uci.substring(2, 4));
+
+        int flags = 0;
+        int promo = 0;
+
+        // Check promotion
+        if (uci.length() == 5) {
+            flags |= Move.FLAG_PROMOTION;
+            char promoChar = uci.charAt(4);
+            promo = charToPieceType(promoChar);
+        }
+
+        // Identify the moving piece type from board
+        int movingPiece = board.pieceAtSquare[from];
+
+        // Check capture by seeing if opponent piece exists on `to` square
+        boolean isCapture = board.pieceAtSquare[to] != 0;
+
+        if (isCapture) {
+            flags |= Move.FLAG_CAPTURE;
+        }
+
+        // Check special moves:
+        // 1) Castling: from e1/e8 to g1/c1 or g8/c8
+        if (movingPiece == KING) {
+            if (from == algebraicToSquare("e1") && to == algebraicToSquare("g1") && board.playerToMove == WHITE) {
+                flags = Move.FLAG_KINGSIDE_CASTLE;
+                promo = 0;
+                isCapture = false;
+            } else if (from == algebraicToSquare("e1") && to == algebraicToSquare("c1") && board.playerToMove == WHITE) {
+                flags = Move.FLAG_QUEENSIDE_CASTLE;
+                promo = 0;
+                isCapture = false;
+            } else if (from == algebraicToSquare("e8") && to == algebraicToSquare("g8") && board.playerToMove == BLACK) {
+                flags = Move.FLAG_KINGSIDE_CASTLE;
+                promo = 0;
+                isCapture = false;
+            } else if (from == algebraicToSquare("e8") && to == algebraicToSquare("c8") && board.playerToMove == BLACK) {
+                flags = Move.FLAG_QUEENSIDE_CASTLE;
+                promo = 0;
+                isCapture = false;
+            }
+        }
+
+        // 2) En passant capture: if move matches en passant square
+        if ((flags & Move.FLAG_CAPTURE) == 0 // only if not already normal capture
+                && to == board.enPassantSquare
+                && movingPiece == PAWN) {
+            flags |= Move.FLAG_EN_PASSANT | Move.FLAG_CAPTURE;
+        }
+
+        // 3) Double pawn push (two squares forward)
+        if (movingPiece == PAWN) {
+            int fromRank = from / 8;
+            int toRank = to / 8;
+            if (board.playerToMove == WHITE && (toRank - fromRank) == 2) {
+                flags |= Move.FLAG_DOUBLE_PAWN_PUSH;
+            } else if (board.playerToMove == BLACK && (fromRank - toRank) == 2) {
+                flags |= Move.FLAG_DOUBLE_PAWN_PUSH;
+            }
+        }
+
+        // Create the move
+        if ((flags & Move.FLAG_PROMOTION) != 0 && (flags & Move.FLAG_CAPTURE) != 0) {
+            return Move.createPromotionCapture(from, to, promo);
+        } else if ((flags & Move.FLAG_PROMOTION) != 0) {
+            return Move.createPromotionMove(from, to, promo);
+        } else if ((flags & Move.FLAG_CAPTURE) != 0) {
+            return Move.createCapture(from, to);
+        } else if ((flags & Move.FLAG_DOUBLE_PAWN_PUSH) != 0) {
+            return Move.createDoublePawnPush(from, to);
+        } else if ((flags & Move.FLAG_KINGSIDE_CASTLE) != 0) {
+            return Move.createCastleKingSide(from, to);
+        } else if ((flags & Move.FLAG_QUEENSIDE_CASTLE) != 0) {
+            return Move.createCastleQueenSide(from, to);
+        } else if ((flags & Move.FLAG_EN_PASSANT) != 0) {
+            return Move.createEnPassantCapture(from, to);
+        } else {
+            return Move.createQuietMove(from, to);
+        }
     }
 }
