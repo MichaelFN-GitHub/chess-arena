@@ -11,8 +11,8 @@ public class MatchManager {
     private Stack<String> moveHistory;
     private String initialPositionFEN;
 
-    public MatchManager() {
-        this.boardState = new BoardState();
+    public MatchManager(BoardState boardState) {
+        this.boardState = boardState;
         this.moveHistory = new Stack<>();
         this.initialPositionFEN = boardState.generateFenString();
     }
