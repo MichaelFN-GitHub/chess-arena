@@ -199,6 +199,10 @@ public final class Bitboard {
         return bb & (bb - 1);
     }
 
+    public static int mirror(int square) {
+        return square ^ 56;
+    }
+
     public static boolean isEmpty(long bb) {
         return bb == 0L;
     }

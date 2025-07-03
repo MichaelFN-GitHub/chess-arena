@@ -49,7 +49,7 @@ public class EngineV5 implements Engine {
 
     @Override
     public String getEngineName() {
-        return "Bitboard Engine";
+        return "Pesto Bitboard Engine (V5)";
     }
 
     @Override

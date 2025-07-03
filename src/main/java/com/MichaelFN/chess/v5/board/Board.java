@@ -53,6 +53,20 @@ public class Board {
         BoardInitializer.initializeBoard(this);
     }
 
+    public boolean isRepetition() {
+        // Same position repeated 3 times
+        return repetitionCount.get(hashKey) >= 3;
+    }
+
+    public boolean isInsufficientMaterial() {
+        // Only kings left
+        return Long.bitCount(pieces[WHITE][ALL_PIECES] | pieces[BLACK][ALL_PIECES]) == 2;
+    }
+
+    public boolean fiftyMoveRule() {
+        return halfmoveClock >= 50;
+    }
+
     public void makeMove(int move) {
         int color = playerToMove;
         int enemyColor = 1 - playerToMove;
@@ -201,9 +215,9 @@ public class Board {
         // Change player to move
         playerToMove = enemyColor;
         hashKey = Zobrist.toggleSideToMove(hashKey);
+        if (hashKey != Zobrist.computeHash(this)) System.out.println("WHAT DE HEEEELL?!");
 
         // Repetition count
-        //hashKey = Zobrist.computeHash(this);
         repetitionCount.put(hashKey, repetitionCount.getOrDefault(hashKey, 0) + 1);
 
         // Move count

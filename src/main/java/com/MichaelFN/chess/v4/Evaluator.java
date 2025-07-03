@@ -1,5 +1,6 @@
 package com.MichaelFN.chess.v4;
 
+import com.MichaelFN.chess.common.PestoConstants;
 import com.MichaelFN.chess.interfaces.NormalEvaluator;
 import com.MichaelFN.chess.v1.BoardState;
 import com.MichaelFN.chess.v1.Color;

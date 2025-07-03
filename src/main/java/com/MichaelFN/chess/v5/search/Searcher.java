@@ -1,5 +1,6 @@
 package com.MichaelFN.chess.v5.search;
 
+import com.MichaelFN.chess.v5.Utils;
 import com.MichaelFN.chess.v5.move.Move;
 import com.MichaelFN.chess.v5.move.MoveGenerator;
 import com.MichaelFN.chess.v5.board.Board;
@@ -22,6 +23,9 @@ public class Searcher {
     private static final int MAX_DEPTH = 64;
     private final int[][] pvTable = new int[MAX_DEPTH][MAX_DEPTH];
     private final int[] pvLength = new int[MAX_DEPTH];
+
+    private static final int CHECKMATE_SCORE = 99999999;
+    private static final int DRAW_SCORE = 0;
 
     public Searcher(Evaluator evaluator) {
         this.moveGenerator = new MoveGenerator();
@@ -101,6 +105,9 @@ public class Searcher {
             }
         }
 
+        // Repetition, fifty move rule, insufficient material
+        if (board.isRepetition() || board.fiftyMoveRule() || board.isInsufficientMaterial()) return DRAW_SCORE;
+
         // Reached max depth: evaluate using quiescence search
         if (depth == 0) {
             return quiescence(board, alpha, beta, ply + 1, endTime);
@@ -109,9 +116,20 @@ public class Searcher {
         // Generate and order all legal moves
         moveGenerator.generateLegalMoves(board, ply);
         int moveCount = moveGenerator.legalMoveCounts[ply];
+
+        // No legal moves
+        if (moveCount == 0) {
+            if (Utils.isInCheck(board, board.playerToMove)) {
+                // Checkmate
+                return -CHECKMATE_SCORE + ply;
+            }
+            // Stalemate
+            return DRAW_SCORE;
+        }
+
         int[] legalMoves = moveGenerator.legalMoves[ply];
         int pvMove = pvLength[ply] > 0 ? pvTable[ply][0] : 0;
-        MoveOrdering.orderMoves(legalMoves, pvMove, ttMove);
+        MoveOrdering.orderMoves(moveCount, legalMoves, pvMove, ttMove, board);
 
         int maxScore = Integer.MIN_VALUE;
         int bestMoveAtThisNode = 0;
@@ -176,7 +194,7 @@ public class Searcher {
         moveGenerator.generateLegalCaptures(board, ply);
         int captureCount = moveGenerator.legalMoveCounts[ply];
         int[] captures = moveGenerator.legalMoves[ply];
-        MoveOrdering.orderMoves(captures, 0, 0);  // Not sure if this matters much for performance
+        MoveOrdering.orderMoves(captureCount, captures, 0, 0, board);  // Not sure if this matters much for performance
 
         for (int i = 0; i < captureCount; i++) {
             if (System.currentTimeMillis() > endTime) {

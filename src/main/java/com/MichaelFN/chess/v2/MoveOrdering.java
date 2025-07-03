@@ -12,7 +12,6 @@ public class MoveOrdering {
     private static final int TT_MOVE_SCORE = 900000;
     private static final int PROMOTION_SCORE = 800000;
     private static final int[][] MVV_LVA_TABLE = new int[6][6]; // MVV_LVA_TABLE[victim][attacker]
-
     static {
         for (int victim = 0; victim < 6; victim++) {
             for (int attacker = 0; attacker < 6; attacker++) {

@@ -1,4 +1,4 @@
-package com.MichaelFN.chess.v4;
+package com.MichaelFN.chess.common;
 
 public class PestoConstants {
 
@@ -6,8 +6,8 @@ public class PestoConstants {
     public static int[] GAME_PHASE_VALUES = {0, 1, 1, 2, 4, 0};
 
     // Material values for midgame and endgame
-    public static int[] MG_VALUE = { 82, 337, 365, 477, 1025, 0 };
-    public static int[] EG_VALUE = { 94, 281, 297, 512, 936, 0 };
+    public static int[] MG_VALUE = { 82, 337, 365, 477, 1025, 99999 };
+    public static int[] EG_VALUE = { 94, 281, 297, 512, 936, 99999 };
 
     // Piece-square tables for midgame and endgame
     public static final int[][][] MG_PIECE_TABLES = {
@@ -147,5 +147,35 @@ public class PestoConstants {
                     {-53, -34, -21, -11, -28, -14, -24, -43 }
             }
     };
+
+    // For bitboards
+    public static final int[][] MG_PST = new int[6][64];
+    public static final int[][] EG_PST = new int[6][64];
+
+    static {
+        // Convert 8x8 to 64-square for midgame
+        for (int type = 0; type < 6; type++) {
+            for (int row = 0; row < 8; row++) {
+                for (int file = 0; file < 8; file++) {
+                    int rank = 7 - row;
+                    int square = rank*8 + file;
+                    MG_PST[type][square] = MG_PIECE_TABLES[type][row][file];
+                    EG_PST[type][square] = EG_PIECE_TABLES[type][row][file];
+                }
+            }
+        }
+        /*
+        for (int k = 0; k < 6; k++) {
+            for (int i = 0; i < 8; i++) {
+                for (int j = 0; j < 8; j++) {
+                    int rank = 7 - i;
+                    System.out.print(MG_PST[k][rank*8+j] + " ");
+                }
+                System.out.println();
+            }
+            System.out.println();
+        }*/
+    }
+
 
 }
