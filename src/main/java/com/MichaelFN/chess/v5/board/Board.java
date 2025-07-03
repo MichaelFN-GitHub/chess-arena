@@ -215,7 +215,6 @@ public class Board {
         // Change player to move
         playerToMove = enemyColor;
         hashKey = Zobrist.toggleSideToMove(hashKey);
-        if (hashKey != Zobrist.computeHash(this)) System.out.println("WHAT DE HEEEELL?!");
 
         // Repetition count
         repetitionCount.put(hashKey, repetitionCount.getOrDefault(hashKey, 0) + 1);
