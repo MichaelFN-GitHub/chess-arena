@@ -10,6 +10,7 @@ public class MoveOrdering {
     private static final int PV_MOVE_SCORE = 1000000;
     private static final int TT_MOVE_SCORE = 900000;
     private static final int PROMOTION_SCORE = 800000;
+    private static final int EN_PASSANT_SCORE = 10000;
     private static final int[][] MVV_LVA_TABLE = new int[7][7]; // MVV_LVA_TABLE[victim][attacker]
     static {
         for (int victim = 1; victim < 7; victim++) {
@@ -41,7 +42,7 @@ public class MoveOrdering {
 
     private static int getMVVLVA_Score(int move, Board board) {
         if (!Move.isCapture(move)) return 0;
-        if (Move.isEnPassant(move)) return MVV_LVA_TABLE[Constants.PAWN][Constants.PAWN];
+        if (Move.isEnPassant(move)) return EN_PASSANT_SCORE;
 
         int victim = board.pieceAtSquare[Move.getTo(move)];
         int attacker = board.pieceAtSquare[Move.getFrom(move)];

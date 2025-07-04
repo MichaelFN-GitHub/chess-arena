@@ -12,7 +12,7 @@ public class TranspositionTable {
     private final Entry[] table;
     private int collisions = 0;
 
-    // Entry used only internally
+    // TTEntry used only internally
     static class Entry {
         long key;
         int depth;

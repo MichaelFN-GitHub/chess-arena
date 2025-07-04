@@ -6,8 +6,8 @@ public class PestoConstants {
     public static int[] GAME_PHASE_VALUES = {0, 1, 1, 2, 4, 0};
 
     // Material values for midgame and endgame
-    public static int[] MG_VALUE = { 82, 337, 365, 477, 1025, 99999 };
-    public static int[] EG_VALUE = { 94, 281, 297, 512, 936, 99999 };
+    public static int[] MG_VALUE = { 82, 337, 365, 477, 1025, 20000 };
+    public static int[] EG_VALUE = { 94, 281, 297, 512, 936, 20000 };
 
     // Piece-square tables for midgame and endgame
     public static final int[][][] MG_PIECE_TABLES = {

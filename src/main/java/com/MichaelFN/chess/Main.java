@@ -6,12 +6,15 @@ import com.MichaelFN.chess.v1.BoardState;
 
 import javax.swing.*;
 
+import static com.MichaelFN.chess.common.Constants.*;
+
 public class Main {
     public static void main(String[] args) {
         Arena arena = new Arena(new BoardState());
 
         //arena.runTournament(2, 100);
-        arena.runOneVsAll(5, 5, 100);
+        //arena.runOneVsAll(5, 5, 100);
+        //arena.playOneVsOne(VERSION_5, VERSION_6, 5, 200);
 
         SwingUtilities.invokeLater(() -> new GUI(new BoardState()));
     }

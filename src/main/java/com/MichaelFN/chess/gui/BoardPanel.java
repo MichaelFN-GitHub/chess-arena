@@ -16,6 +16,7 @@ import java.util.Objects;
 import java.util.Stack;
 
 import static com.MichaelFN.chess.common.Constants.ALL_ENGINES;
+import static com.MichaelFN.chess.common.Constants.DEBUG_GUI;
 
 public class BoardPanel extends JPanel implements MouseListener, MouseMotionListener {
     private static final int TILE_SIZE = 80;
@@ -38,6 +39,7 @@ public class BoardPanel extends JPanel implements MouseListener, MouseMotionList
 
     public BoardPanel(BoardState boardState) {
         this.boardState = boardState;
+        boardState.parseFEN("8/6p1/8/3n3R/2k4P/r4K2/6P1/8 w - - 9 51");
         this.pieceImages = new Image[2][6];
         this.FEN = boardState.generateFenString();
         this.moveHistory = new Stack<>();
@@ -159,7 +161,7 @@ public class BoardPanel extends JPanel implements MouseListener, MouseMotionList
 
     public void unmakeMove() {
         boardState.unmakeMove();
-        moveHistory.pop();
+        if (!moveHistory.empty()) moveHistory.pop();
         repaint();
     }
 
@@ -183,6 +185,8 @@ public class BoardPanel extends JPanel implements MouseListener, MouseMotionList
             boardState.makeMove(move);
             moveHistory.push(Utils.moveToUci(move));
         }
+
+        if (DEBUG_GUI) System.out.println("Current position: " + boardState.generateFenString());;
     }
 
     public void setWhiteEngine(Engine engine) {

@@ -4,40 +4,11 @@ import java.util.Arrays;
 
 public class TranspositionTable {
 
-    private static final int APPROX_ENTRY_SIZE_BYTES = 40;
+    private static final int APPROX_ENTRY_SIZE_BYTES = 30;
 
     private final int size;
-    private final Entry[] table;
+    private final TTEntry[] table;
     private int collisions = 0;
-
-    // Entry used only internally
-    static class Entry {
-        long key;
-        int depth;
-        int score;
-        int flag;
-        int bestMove;
-
-        static final int EXACT = 0;
-        static final int LOWERBOUND = 1;
-        static final int UPPERBOUND = 2;
-
-        Entry(long key, int depth, int score, int flag, int bestMove) {
-            this.key = key;
-            this.depth = depth;
-            this.score = score;
-            this.flag = flag;
-            this.bestMove = bestMove;
-        }
-
-        void update(long key, int depth, int score, int flag, int bestMove) {
-            this.key = key;
-            this.depth = depth;
-            this.score = score;
-            this.flag = flag;
-            this.bestMove = bestMove;
-        }
-    }
 
     public TranspositionTable(int sizeInMB) {
         // Allocate sizeInMB megabytes
@@ -45,13 +16,7 @@ public class TranspositionTable {
 
         // MAke size a power of 2 for efficient indexing
         size = Integer.highestOneBit(entries);
-        table = new Entry[size];
-    }
-
-    private int index(long key) {
-        // Use lower bits of key for indexing
-        // Note: Collisions could happen if size of table is too small...
-        return (int) (key & (size - 1));
+        table = new TTEntry[size];
     }
 
     public void put(long key, int depth, int score, int flag) {
@@ -59,8 +24,8 @@ public class TranspositionTable {
     }
 
     public void put(long key, int depth, int score, int flag, int bestMove) {
-        int idx = index(key);
-        Entry entry = table[idx];
+        int idx = (int) (key & (size - 1));
+        TTEntry entry = table[idx];
 
         if (entry != null) {
             if (entry.key != key) collisions++;
@@ -70,18 +35,18 @@ public class TranspositionTable {
                 entry.update(key, depth, score, flag, bestMove);
             }
         } else {
-            table[idx] = new Entry(key, depth, score, flag, bestMove);
+            table[idx] = new TTEntry(key, depth, score, flag, bestMove);
         }
     }
 
     public int getScore(long key) {
-        Entry entry = get(key);
+        TTEntry entry = get(key);
         return entry != null ? entry.score : Integer.MIN_VALUE;
     }
 
-    public Entry get(long key) {
-        int idx = index(key);
-        Entry entry = table[idx];
+    public TTEntry get(long key) {
+        int idx = (int) (key & (size - 1));
+        TTEntry entry = table[idx];
         if (entry != null && entry.key == key) {
             return entry;
         }

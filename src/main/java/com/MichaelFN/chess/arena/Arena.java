@@ -19,6 +19,48 @@ public class Arena {
         manager = new MatchManager(boardState);
     }
 
+    public int[][][] playOneVsOne(int version1, int version2, int n_positions, int engineSearchTimeMS) {
+        int n_engines = ALL_ENGINES.length;
+        int[][] whitePoints = new int[n_engines][n_engines];
+        int[][] blackPoints = new int[n_engines][n_engines];
+
+        List<String> equalPositions;
+        try {
+            equalPositions = readChessPositions(n_positions);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to read positions", e);
+        }
+
+        if (equalPositions == null || equalPositions.isEmpty()) {
+            System.out.println("No positions loaded for 1v1 match.");
+            return null;
+        }
+
+        int matchCounter = 1;
+        for (String initialPosition : equalPositions) {
+            System.out.print("1v1 Match " + matchCounter++ + " / " + n_positions*2 + ": ");
+            playMatchAndSaveResult(whitePoints, blackPoints, version1 - 1, version2 - 1, engineSearchTimeMS, initialPosition);
+
+            System.out.print("1v1 Match " + matchCounter++ + " / " + n_positions*2 + ": ");
+            playMatchAndSaveResult(whitePoints, blackPoints, version2 - 1, version1 - 1, engineSearchTimeMS, initialPosition);
+        }
+
+        String[] names = collectEngineNames(n_engines);
+        int v1White_v2Black = whitePoints[version1 - 1][version2 - 1];
+        int v2Black_v1White = blackPoints[version2 - 1][version1 - 1];
+
+        int v2White_v1Black = whitePoints[version2 - 1][version1 - 1];
+        int v1Black_v2White = blackPoints[version1 - 1][version2 - 1];
+
+        int v1Total = v1White_v2Black + v1Black_v2White;
+        int v2Total = v2White_v1Black + v2Black_v1White;
+
+        System.out.println("\nResults for 1v1 match:");
+        printResults(whitePoints, blackPoints, collectEngineNames(n_engines));
+
+        return new int[][][] { whitePoints, blackPoints };
+    }
+
     public int[][][] runTournament(int n_positions, int engineSearchTimeMS) {
         int n_engines = ALL_ENGINES.length;
 

@@ -27,7 +27,7 @@ public class MoveGenerator {
     }
 
     public void generateLegalMoves(Board board, int ply) {
-        legalMoveCounts[currentPly] = 0;
+        legalMoveCounts[ply] = 0;
 
         generatePseudoLegalMoves(board, ply);
 
@@ -59,7 +59,7 @@ public class MoveGenerator {
     }
 
     public void generateLegalCaptures(Board board, int ply) {
-        legalMoveCounts[currentPly] = 0;
+        legalMoveCounts[ply] = 0;
 
         generatePseudoLegalCaptures(board, ply);
 

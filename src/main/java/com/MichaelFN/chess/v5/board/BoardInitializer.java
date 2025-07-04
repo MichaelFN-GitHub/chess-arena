@@ -53,6 +53,6 @@ public class BoardInitializer {
         board.fullmoveNumber = Integer.parseInt(parts[5]);
         board.moveCounter = 0;
         board.hashKey = Zobrist.computeHash(board);
-        board.repetitionCount = new HashMap<>(){{ put(board.hashKey, 1); }};
+        //board.repetitionCount = new HashMap<>(){{ put(board.hashKey, 1); }};
     }
 }

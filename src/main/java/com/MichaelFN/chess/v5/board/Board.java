@@ -31,7 +31,6 @@ public class Board {
     public int halfmoveClock;   // 0..50
     public int fullmoveNumber;  // 1..MAX_MOVES
     public int gameStatus;      // 0 = ongoing, 1 = white win, 2 = black win, 3 = draw
-    public HashMap<Long,Integer> repetitionCount = new HashMap<>();
 
     // History variables
     private final int[] moveHistory = new int[MAX_MOVES];
@@ -54,8 +53,14 @@ public class Board {
     }
 
     public boolean isRepetition() {
-        // Same position repeated 3 times
-        return repetitionCount.get(hashKey) >= 3;
+        int count = 0;
+        for (int i = moveCounter - 1; i >= 0 && i >= moveCounter - halfmoveClock; i--) {
+            if (hashKeyHistory[i] == hashKey) {
+                count++;
+                if (count >= 2) return true; // Current position is the 3rd occurrence
+            }
+        }
+        return false;
     }
 
     public boolean isInsufficientMaterial() {
@@ -216,9 +221,6 @@ public class Board {
         playerToMove = enemyColor;
         hashKey = Zobrist.toggleSideToMove(hashKey);
 
-        // Repetition count
-        repetitionCount.put(hashKey, repetitionCount.getOrDefault(hashKey, 0) + 1);
-
         // Move count
         moveCounter++;
     }
@@ -245,7 +247,6 @@ public class Board {
         long fromToBB = fromBB | toBB;
 
         // Restore game state from history
-        repetitionCount.put(hashKey, repetitionCount.get(hashKey) - 1);
         castlingRights = castlingRightsHistory[moveCounter];
         enPassantSquare = enPassantSquareHistory[moveCounter];
         halfmoveClock = halfmoveClockHistory[moveCounter];
@@ -311,6 +312,37 @@ public class Board {
         gameStatus = ONGOING;
     }
 
+    public void makeNullMove() {
+
+        // Update history
+        castlingRightsHistory[moveCounter] = castlingRights;
+        enPassantSquareHistory[moveCounter] = enPassantSquare;
+        halfmoveClockHistory[moveCounter] = halfmoveClock;
+        fullmoveNumberHistory[moveCounter] = fullmoveNumber;
+        hashKeyHistory[moveCounter] = hashKey;
+
+        hashKey = Zobrist.toggleSideToMove(hashKey);
+
+        halfmoveClock++;
+        moveCounter++;
+
+        enPassantSquare = -1;
+        playerToMove = 1 - playerToMove;
+    }
+
+    public void unmakeNullMove() {
+        moveCounter--;
+
+        // Restore game state from history
+        castlingRights = castlingRightsHistory[moveCounter];
+        enPassantSquare = enPassantSquareHistory[moveCounter];
+        halfmoveClock = halfmoveClockHistory[moveCounter];
+        fullmoveNumber = fullmoveNumberHistory[moveCounter];
+        hashKey = hashKeyHistory[moveCounter];
+
+        playerToMove = 1 - playerToMove;
+    }
+
     public void parseFEN(String FEN) {
         BoardInitializer.initializeBoard(this, FEN);
     }
@@ -325,7 +357,6 @@ public class Board {
         gameStatus = 0;
         pieceAtSquare = new int[64];
         moveCounter = 0;
-        repetitionCount.clear();
         Arrays.fill(moveHistory, 0);
         Arrays.fill(castlingRightsHistory, 0);
         Arrays.fill(enPassantSquareHistory, 0);
