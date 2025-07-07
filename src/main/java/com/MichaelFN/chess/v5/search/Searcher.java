@@ -283,4 +283,8 @@ public class Searcher {
     public void clearTranspositionTable() {
         transpositionTable.clear();
     }
+
+    public void stop() {
+        timeIsUp = true;
+    }
 }

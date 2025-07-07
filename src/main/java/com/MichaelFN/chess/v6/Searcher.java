@@ -105,7 +105,7 @@ public class Searcher {
                         " pv ");
                 List<Integer> pvMoves = getPrincipalVariation(0);
                 int count = Math.min(pvMoves.size(), depth);
-                for (int i = 0; i < count; i++) System.out.print(Move.toString(pvMoves.get(i)) + " ");
+                for (int i = 0; i < count; i++) System.out.print(Utils.moveToUci(pvMoves.get(i)) + " ");
                 System.out.println();
             }
         }
@@ -422,5 +422,9 @@ public class Searcher {
         clearTranspositionTable();
         clearPrincipalVariation();
         clearKillerMoves();
+    }
+
+    public void stop() {
+        timeIsUp = true;
     }
 }

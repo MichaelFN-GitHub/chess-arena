@@ -32,13 +32,18 @@ public class EngineV1 implements Engine {
     }
 
     @Override
-    public void startSearch(long timeLimitMillis) {
+    public void startSearch(int depth, long timeLimitMillis) {
         // Chooses move at random
         if (DEBUG_ENGINES) System.out.println(getEngineName() + ": Search started...");
         List<Move> moves = MoveGenerator.generateLegalMoves(boardState);
         Collections.shuffle(moves);
         nextMove = moves.getFirst();
         if (DEBUG_ENGINES) System.out.println(getEngineName() + ": Done searching.");
+    }
+
+    @Override
+    public void stopSearch() {
+        // Do nothing
     }
 
     @Override
@@ -64,5 +69,10 @@ public class EngineV1 implements Engine {
     @Override
     public String toString() {
         return getEngineName();
+    }
+
+    @Override
+    public void printBoard() {
+        System.out.println(boardState.toString());
     }
 }

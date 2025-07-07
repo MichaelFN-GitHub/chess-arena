@@ -37,6 +37,10 @@ public class Utils {
         };
     }
 
+    public static char pieceTypeToChar(int pieceType) {
+        return pieceTypeToChar(pieceType, BLACK);
+    }
+
     public static char pieceTypeToChar(int pieceType, int color) {
         char c = switch (pieceType) {
             case 1 -> 'P';
@@ -116,7 +120,7 @@ public class Utils {
         return (left ^ right) & mask;
     }
 
-    public static String moveToUci(int move, Board board) {
+    public static String moveToUci(int move) {
         int from = Move.getFrom(move);
         int to = Move.getTo(move);
 
@@ -127,7 +131,7 @@ public class Utils {
 
         if (Move.isPromotion(move)) {
             int promo = Move.getPromotionPiece(move);
-            char promoChar = pieceTypeToChar(promo, board.playerToMove);
+            char promoChar = pieceTypeToChar(promo);
             sb.append(promoChar);
         }
 

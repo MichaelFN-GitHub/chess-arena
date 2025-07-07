@@ -2,6 +2,7 @@ package com.MichaelFN.chess.gui;
 
 import com.MichaelFN.chess.interfaces.Engine;
 import com.MichaelFN.chess.v1.*;
+import com.MichaelFN.chess.v5.Constants;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -39,7 +40,7 @@ public class BoardPanel extends JPanel implements MouseListener, MouseMotionList
 
     public BoardPanel(BoardState boardState) {
         this.boardState = boardState;
-        boardState.parseFEN("8/6p1/8/3n3R/2k4P/r4K2/6P1/8 w - - 9 51");
+        //boardState.parseFEN("8/6p1/8/3n3R/2k4P/r4K2/6P1/8 w - - 9 51");
         this.pieceImages = new Image[2][6];
         this.FEN = boardState.generateFenString();
         this.moveHistory = new Stack<>();
@@ -171,7 +172,7 @@ public class BoardPanel extends JPanel implements MouseListener, MouseMotionList
         Engine engine = boardState.getPlayerToMove() == com.MichaelFN.chess.v1.Color.WHITE ? whiteEngine : blackEngine;
 
         engine.setPosition(FEN, moveHistory);
-        engine.startSearch(ENGINE_SEARCH_TIME_MS);
+        engine.startSearch(Constants.MAX_SEARCH_DEPTH, ENGINE_SEARCH_TIME_MS);
         String uciMove = engine.getMove();
         Move move = Utils.uciToMove(uciMove, boardState);
         makeMoveIfLegal(move);

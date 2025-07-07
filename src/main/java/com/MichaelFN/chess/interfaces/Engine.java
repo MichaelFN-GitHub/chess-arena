@@ -28,7 +28,12 @@ public interface Engine {
      *
      * @param timeLimitMillis Time allowed for the search in milliseconds.
      */
-    void startSearch(long timeLimitMillis);
+    void startSearch(int depth, long timeLimitMillis);
+
+    /**
+     * Stops the search for the next move
+     */
+    void stopSearch();
 
     /**
      * Gets the move found by the engine after a search.
@@ -48,5 +53,7 @@ public interface Engine {
     void clear();
 
     String toString();
+
+    void printBoard();
 }
 

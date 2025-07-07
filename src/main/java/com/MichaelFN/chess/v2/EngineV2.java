@@ -10,9 +10,9 @@ public class EngineV2 extends EngineV1 {
     private final Negamax searcher = new Negamax(evaluator);
 
     @Override
-    public void startSearch(long timeLimitMillis) {
+    public void startSearch(int depth, long timeLimitMillis) {
         if (DEBUG_ENGINES) System.out.println(getEngineName() + ": Search started...");
-        nextMove = searcher.findBestMove(boardState, 100, timeLimitMillis);
+        nextMove = searcher.findBestMove(boardState, depth, timeLimitMillis);
         if (DEBUG_ENGINES) System.out.println(getEngineName() + ": Done searching.");
     }
 

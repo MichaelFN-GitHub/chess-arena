@@ -129,7 +129,7 @@ public class Move {
         return getFlags(move) == 0;
     }
 
-    public static String toString(int move) {
+    public static String toStringDebug(int move) {
         String from = SQUARE_NAMES[getFrom(move)];
         String to = SQUARE_NAMES[getTo(move)];
         StringBuilder sb = new StringBuilder(from).append(to);
@@ -151,6 +151,16 @@ public class Move {
             if (isDoublePawnPush(move)) {
                 sb.append(" (double pawn push)");
             }
+        }
+        return sb.toString();
+    }
+
+    public static String toString(int move) {
+        String from = SQUARE_NAMES[getFrom(move)];
+        String to = SQUARE_NAMES[getTo(move)];
+        StringBuilder sb = new StringBuilder(from).append(to);
+        if (isPromotion(move)) {
+            sb.append("=").append(PIECE_NAMES[getPromotionPiece(move)]);
         }
         return sb.toString();
     }

@@ -36,15 +36,20 @@ public class EngineV5 implements Engine {
     }
 
     @Override
-    public void startSearch(long timeLimitMillis) {
+    public void startSearch(int depth, long timeLimitMillis) {
         if (DEBUG_ENGINES) System.out.println(getEngineName() + ": Search started...");
-        bestMove = searcher.negamax(board, Constants.MAX_PLY - 1, timeLimitMillis);
+        bestMove = searcher.negamax(board, depth, timeLimitMillis);
         if (DEBUG_ENGINES) System.out.println(getEngineName() + ": Done searching.");
     }
 
     @Override
+    public void stopSearch() {
+        searcher.stop();
+    }
+
+    @Override
     public String getMove() {
-        return Utils.moveToUci(bestMove, board);
+        return Utils.moveToUci(bestMove);
     }
 
     @Override
@@ -60,5 +65,10 @@ public class EngineV5 implements Engine {
     @Override
     public String toString() {
         return getEngineName();
+    }
+
+    @Override
+    public void printBoard() {
+        System.out.println(board.toString());
     }
 }

@@ -2,6 +2,7 @@ package com.MichaelFN.chess.arena;
 
 import com.MichaelFN.chess.interfaces.Engine;
 import com.MichaelFN.chess.v1.*;
+import com.MichaelFN.chess.v5.Constants;
 
 import java.util.Stack;
 
@@ -52,7 +53,7 @@ public class MatchManager {
 
     public void makeEngineMove(Engine engine, int engineSearchTimeMS) {
         engine.setPosition(initialPositionFEN, moveHistory);
-        engine.startSearch(engineSearchTimeMS);
+        engine.startSearch(Constants.MAX_SEARCH_DEPTH, engineSearchTimeMS);
         String uciMove = engine.getMove();
         Move move = Utils.uciToMove(uciMove, boardState);
 

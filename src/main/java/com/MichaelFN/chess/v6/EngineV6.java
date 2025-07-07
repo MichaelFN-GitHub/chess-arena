@@ -11,9 +11,9 @@ public class EngineV6 extends EngineV5 {
     private final Searcher searcher = new Searcher(evaluator);
 
     @Override
-    public void startSearch(long timeLimitMillis) {
+    public void startSearch(int depth, long timeLimitMillis) {
         if (DEBUG_ENGINES) System.out.println(getEngineName() + ": Search started...");
-        bestMove = searcher.negamax(board, Constants.MAX_PLY - 1, timeLimitMillis);
+        bestMove = searcher.negamax(board, depth, timeLimitMillis);
         if (DEBUG_ENGINES) System.out.println(getEngineName() + ": Done searching.");
     }
 
