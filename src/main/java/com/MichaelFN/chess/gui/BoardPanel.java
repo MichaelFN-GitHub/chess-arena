@@ -39,8 +39,7 @@ public class BoardPanel extends JPanel implements MouseListener, MouseMotionList
 
     public BoardPanel(BoardState boardState) {
         this.boardState = boardState;
-        //boardState.parseFEN("8/6p1/8/3n3R/2k4P/r4K2/6P1/8 w - - 9 51");
-        boardState.parseFEN("1K6/8/3n4/8/8/2q2k2/8/8 b - - 9 78");
+        boardState.parseFEN("8/6p1/8/3n3R/2k4P/r4K2/6P1/8 w - - 9 51");
         this.pieceImages = new Image[2][6];
         this.FEN = boardState.generateFenString();
         this.moveHistory = new Stack<>();

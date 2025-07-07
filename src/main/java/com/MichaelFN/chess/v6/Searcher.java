@@ -58,28 +58,29 @@ public class Searcher {
         long startTime = System.currentTimeMillis();
         long endTime = startTime + timeMS;
 
+        int alpha = Integer.MIN_VALUE + 1;
+        int beta = Integer.MAX_VALUE - 1;
+
         // Aspiration window
         int guess = 0;
-        int window = 50;
+        int window = 100;
 
         // Iterative deepening
         for (int depth = 1; depth <= maxDepth; depth++) {
             long iterStartTime = System.currentTimeMillis();
             long nodesBefore = nodesSearched;
 
-            int alpha = guess - window;
-            int beta = guess + window;
+            // Search with full window at depth 1
+            if (depth > 1) {
+                alpha = guess - window;
+                beta = guess + window;
+            }
 
             int score = negamax(board, depth, alpha, beta, 0, endTime, true);
-            if (timeIsUp) break;
 
             // If score outside aspiration window, re-search with full window
-            if (score <= alpha) {
+            if (score <= alpha || score >= beta) {
                 alpha = Integer.MIN_VALUE + 1;
-                beta = guess + window;
-                score = negamax(board, depth, alpha, beta, 0, endTime, true);
-            } else if (score >= beta) {
-                alpha = guess - window;
                 beta = Integer.MAX_VALUE - 1;
                 score = negamax(board, depth, alpha, beta, 0, endTime, true);
             }
@@ -88,8 +89,7 @@ public class Searcher {
 
             guess = score;
             bestScore = score;
-            TTEntry ttEntry = transpositionTable.get(board.hashKey);
-            bestMove = ttEntry == null ? 0 : ttEntry.bestMove;
+            bestMove = pvTable[0][0];
 
             if (DEBUG_SEARCH) {
                 long iterEndTime = System.currentTimeMillis();
