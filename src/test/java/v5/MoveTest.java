@@ -21,7 +21,7 @@ public class MoveTest {
         assertFalse(Move.isCastleKingSide(move));
         assertFalse(Move.isCastleQueenSide(move));
         assertFalse(Move.isEnPassant(move));
-        assertEquals("c2c4", Move.toString(move));
+        assertEquals("c2c4", Move.toStringDebug(move));
     }
 
     @Test
@@ -31,7 +31,7 @@ public class MoveTest {
         assertFalse(Move.isPromotion(move));
         assertEquals(E3, Move.getFrom(move));
         assertEquals(D4, Move.getTo(move));
-        assertEquals("e3d4 (capture)", Move.toString(move));
+        assertEquals("e3d4 (capture)", Move.toStringDebug(move));
     }
 
     @Test
@@ -39,7 +39,7 @@ public class MoveTest {
         int move = Move.createDoublePawnPush(E2, E4);
         assertTrue(Move.isDoublePawnPush(move));
         assertFalse(Move.isCapture(move));
-        assertEquals("e2e4 (double pawn push)", Move.toString(move));
+        assertEquals("e2e4 (double pawn push)", Move.toStringDebug(move));
     }
 
     @Test
@@ -47,7 +47,7 @@ public class MoveTest {
         int move = Move.createCastleKingSide(E1, G1);
         assertTrue(Move.isCastleKingSide(move));
         assertFalse(Move.isCapture(move));
-        assertEquals("e1g1 (O-O)", Move.toString(move));
+        assertEquals("e1g1 (O-O)", Move.toStringDebug(move));
     }
 
     @Test
@@ -55,7 +55,7 @@ public class MoveTest {
         int move = Move.createCastleQueenSide(E1, C1);
         assertTrue(Move.isCastleQueenSide(move));
         assertFalse(Move.isCapture(move));
-        assertEquals("e1c1 (O-O-O)", Move.toString(move));
+        assertEquals("e1c1 (O-O-O)", Move.toStringDebug(move));
     }
 
     @Test
@@ -63,7 +63,7 @@ public class MoveTest {
         int move = Move.createEnPassantCapture(E5, D6);
         assertTrue(Move.isCapture(move));
         assertTrue(Move.isEnPassant(move));
-        assertEquals("e5d6 (capture) (en passant)", Move.toString(move));
+        assertEquals("e5d6 (capture) (en passant)", Move.toStringDebug(move));
     }
 
     @Test
@@ -72,13 +72,13 @@ public class MoveTest {
         assertTrue(Move.isPromotion(move));
         assertFalse(Move.isCapture(move));
         assertEquals(QUEEN, Move.getPromotionPiece(move));
-        assertEquals("e7e8=Q", Move.toString(move));
+        assertEquals("e7e8=Q", Move.toStringDebug(move));
 
         move = Move.createPromotionMove(A7, A8, KNIGHT);
         assertTrue(Move.isPromotion(move));
         assertFalse(Move.isCapture(move));
         assertEquals(KNIGHT, Move.getPromotionPiece(move));
-        assertEquals("a7a8=N", Move.toString(move));
+        assertEquals("a7a8=N", Move.toStringDebug(move));
     }
 
     @Test
@@ -87,6 +87,6 @@ public class MoveTest {
         assertTrue(Move.isCapture(move));
         assertTrue(Move.isPromotion(move));
         assertEquals(QUEEN, Move.getPromotionPiece(move));
-        assertEquals("e7e8=Q (capture)", Move.toString(move));
+        assertEquals("e7e8=Q (capture)", Move.toStringDebug(move));
     }
 }

@@ -19,9 +19,6 @@ public class Main {
         //arena.runOneVsAll(5, 5, 100);
         //arena.playOneVsOne(VERSION_5, VERSION_6, 5, 200);
 
-        //SwingUtilities.invokeLater(() -> new GUI(new BoardState()));
-
-        UciConnector uci = new UciConnector(new EngineV6());
-        uci.loop();
+        SwingUtilities.invokeLater(() -> new GUI(new BoardState()));
     }
 }

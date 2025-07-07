@@ -18,6 +18,11 @@ public class EngineV6 extends EngineV5 {
     }
 
     @Override
+    public void stopSearch() {
+        searcher.stop();
+    }
+
+    @Override
     public void clear() {
         searcher.clear();
     }

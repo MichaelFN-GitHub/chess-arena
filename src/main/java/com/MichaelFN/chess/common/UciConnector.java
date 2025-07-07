@@ -1,6 +1,8 @@
 package com.MichaelFN.chess.common;
 
 import com.MichaelFN.chess.interfaces.Engine;
+import com.MichaelFN.chess.v5.EngineV5;
+import com.MichaelFN.chess.v6.EngineV6;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -16,6 +18,10 @@ public class UciConnector {
     private Future<?> searchFuture;
 
     private Engine engine;
+
+    public static void main(String[] args) throws IOException {
+        new UciConnector(new EngineV6()).loop();
+    }
 
     public UciConnector(Engine engine) {
         this.engine = engine;
@@ -35,6 +41,10 @@ public class UciConnector {
 
                 case "isready":
                     out.println("readyok");
+                    break;
+
+                case "ucinewgame":
+                    engine.clear();
                     break;
 
                 case "position":

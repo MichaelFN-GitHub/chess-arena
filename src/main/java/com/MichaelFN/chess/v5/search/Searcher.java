@@ -48,6 +48,9 @@ public class Searcher {
 
         // Iterative deepening
         for (int depth = 1; depth <= maxDepth; depth++) {
+            long iterStartTime = System.currentTimeMillis();
+            int nodesBefore = nodesSearched;
+
             int alpha = Integer.MIN_VALUE + 1;
             int beta = Integer.MAX_VALUE - 1;
 
@@ -60,8 +63,17 @@ public class Searcher {
             bestMove = ttEntry == null ? 0 : ttEntry.bestMove;
 
             if (DEBUG_SEARCH) {
-                // Print principal variation
-                System.out.print("Depth " + depth + " searched. Current best variation: ");
+                long iterEndTime = System.currentTimeMillis();
+                long timeSpent = Math.max(iterEndTime - iterStartTime, 1);
+                long nodesThisDepth = nodesSearched - nodesBefore;
+                long nodesPerSecond = (nodesThisDepth * 1000) / timeSpent;
+
+                System.out.print("info depth " + depth +
+                        " score cp " + bestScore +
+                        " nodes " + nodesThisDepth +
+                        " nps " + nodesPerSecond +
+                        " time " + timeSpent +
+                        " pv ");
                 for (int move : getPrincipalVariation(board, depth)) System.out.print(Move.toString(move) + " ");
                 System.out.println();
             }

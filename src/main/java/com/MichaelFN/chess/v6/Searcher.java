@@ -26,7 +26,7 @@ public class Searcher {
 
     private int nodesSearched;
     private int branchesPruned;
-    private boolean timeIsUp;
+    public boolean timeIsUp;
 
     // Save principal variation for every depth
     private final int[][] pvTable = new int[MAX_DEPTH][MAX_DEPTH];

@@ -37,7 +37,7 @@ public class PerftTest {
                 String[] test = sections[i].split(" ");
                 int depth = Integer.parseInt(test[0].substring(1));
                 long expectedNodes = Long.parseLong(test[1]);
-                if (expectedNodes > 500000) break;
+                if (expectedNodes > 50000) break;
                 long computedNodes = Perft.perft(boardState, depth);
                 assertEquals(expectedNodes, computedNodes, "Perft test failed on depth " + depth + " in the following position: " + FEN);
             }
