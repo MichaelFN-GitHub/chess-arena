@@ -1,7 +1,7 @@
 package com.MichaelFN.chess.v6;
 
 import com.MichaelFN.chess.v5.Constants;
-import com.MichaelFN.chess.v5.search.EngineV5;
+import com.MichaelFN.chess.v5.EngineV5;
 import com.MichaelFN.chess.v5.search.Evaluator;
 
 import static com.MichaelFN.chess.common.Constants.DEBUG_ENGINES;

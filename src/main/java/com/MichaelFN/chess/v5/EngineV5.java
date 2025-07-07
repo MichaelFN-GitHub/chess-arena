@@ -1,9 +1,9 @@
-package com.MichaelFN.chess.v5.search;
+package com.MichaelFN.chess.v5;
 
 import com.MichaelFN.chess.interfaces.Engine;
-import com.MichaelFN.chess.v5.Constants;
-import com.MichaelFN.chess.v5.Utils;
 import com.MichaelFN.chess.v5.board.Board;
+import com.MichaelFN.chess.v5.search.Evaluator;
+import com.MichaelFN.chess.v5.search.Searcher;
 
 import java.util.Stack;
 

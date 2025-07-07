@@ -64,35 +64,48 @@ public class Searcher {
 
         // Iterative deepening
         for (int depth = 1; depth <= maxDepth; depth++) {
+            long iterStartTime = System.currentTimeMillis();
+            long nodesBefore = nodesSearched;
+
             int alpha = guess - window;
             int beta = guess + window;
 
-            int score = negamax(board, depth, alpha, beta, 0, endTime);
-
+            int score = negamax(board, depth, alpha, beta, 0, endTime, true);
             if (timeIsUp) break;
 
             // If score outside aspiration window, re-search with full window
             if (score <= alpha) {
                 alpha = Integer.MIN_VALUE + 1;
                 beta = guess + window;
-                score = negamax(board, depth, alpha, beta, 0, endTime);
+                score = negamax(board, depth, alpha, beta, 0, endTime, true);
             } else if (score >= beta) {
                 alpha = guess - window;
                 beta = Integer.MAX_VALUE - 1;
-                score = negamax(board, depth, alpha, beta, 0, endTime);
+                score = negamax(board, depth, alpha, beta, 0, endTime, true);
             }
 
             if (timeIsUp) break;
 
             guess = score;
-
             bestScore = score;
             TTEntry ttEntry = transpositionTable.get(board.hashKey);
             bestMove = ttEntry == null ? 0 : ttEntry.bestMove;
 
             if (DEBUG_SEARCH) {
-                System.out.print("Depth " + depth + " searched. Current best variation: ");
-                for (int move : getPrincipalVariation(board, depth)) System.out.print(Move.toString(move) + " ");
+                long iterEndTime = System.currentTimeMillis();
+                long timeSpent = Math.max(iterEndTime - iterStartTime, 1);
+                long nodesThisDepth = nodesSearched - nodesBefore;
+                long nodesPerSecond = (nodesThisDepth * 1000) / timeSpent;
+
+                System.out.print("info depth " + depth +
+                        " score cp " + bestScore +
+                        " nodes " + nodesThisDepth +
+                        " nps " + nodesPerSecond +
+                        " time " + timeSpent +
+                        " pv ");
+                List<Integer> pvMoves = getPrincipalVariation(0);
+                int count = Math.min(pvMoves.size(), depth);
+                for (int i = 0; i < count; i++) System.out.print(Move.toString(pvMoves.get(i)) + " ");
                 System.out.println();
             }
         }
@@ -108,9 +121,9 @@ public class Searcher {
         return bestMove;
     }
 
-    private int negamax(Board board, int depth, int alpha, int beta, int ply, long endTime) {
+    private int negamax(Board board, int depth, int alpha, int beta, int ply, long endTime, boolean isPv) {
         // Check for timeout before any computation
-        if ((nodesSearched & 512) == 0 && System.currentTimeMillis() > endTime) {
+        if ((nodesSearched & 2048) == 0 && System.currentTimeMillis() > endTime) {
             timeIsUp = true;
             return 0;
         }
@@ -127,20 +140,22 @@ public class Searcher {
         TTEntry ttEntry = transpositionTable.get(hashKey);
         int ttMove = 0;
 
-        if (ttEntry != null && ttEntry.depth >= depth) {
+        if (!isPv && ttEntry != null) {
             ttMove = ttEntry.bestMove;
 
-            if (ttEntry.flag == TTEntry.EXACT) {
-                return ttEntry.score;
-            } else if (ttEntry.flag == TTEntry.LOWERBOUND && ttEntry.score > alpha) {
-                alpha = ttEntry.score;
-            } else if (ttEntry.flag == TTEntry.UPPERBOUND && ttEntry.score < beta) {
-                beta = ttEntry.score;
-            }
+            if (ttEntry.depth >= depth) {
+                if (ttEntry.flag == TTEntry.EXACT) {
+                    return ttEntry.score;
+                } else if (ttEntry.flag == TTEntry.LOWERBOUND && ttEntry.score > alpha) {
+                    alpha = ttEntry.score;
+                } else if (ttEntry.flag == TTEntry.UPPERBOUND && ttEntry.score < beta) {
+                    beta = ttEntry.score;
+                }
 
-            if (alpha >= beta) {
-                branchesPruned++;
-                return ttEntry.score;
+                if (alpha >= beta) {
+                    branchesPruned++;
+                    return ttEntry.score;
+                }
             }
         }
 
@@ -173,7 +188,7 @@ public class Searcher {
             board.makeNullMove();
 
             int R = (depth >= 6) ? 3 : 2;
-            int score = -negamax(board, depth - R - 1, -beta, -beta + 1, ply + 1, endTime);
+            int score = -negamax(board, depth - R - 1, -beta, -beta + 1, ply + 1, endTime, false);
 
             board.unmakeNullMove();
 
@@ -193,8 +208,10 @@ public class Searcher {
         int originalAlpha = alpha;
 
         boolean firstSearch = true;
+        boolean updatePv = false;
+
         for (int i = 0; i < moveCount; i++) {
-            if ((nodesSearched & 512) == 0 && System.currentTimeMillis() > endTime) {
+            if ((nodesSearched & 2048) == 0 && System.currentTimeMillis() > endTime) {
                 timeIsUp = true;
                 return 0;
             }
@@ -227,8 +244,10 @@ public class Searcher {
             int score;
             if (firstSearch) {
                 // Full window search on first move
-                score = -negamax(board, depth - 1 + extension, -beta, -alpha, ply + 1, endTime);
+                score = -negamax(board, depth - 1 + extension, -beta, -alpha, ply + 1, endTime, isPv);
                 firstSearch = false;
+                updatePv = true;
+
             } else {
 
                 // Late move reduction (very conservative)
@@ -237,11 +256,13 @@ public class Searcher {
                         depth - 1;  // Don't reduce
 
                 // Null window search
-                score = -negamax(board, newDepth, -alpha - 1, -alpha, ply + 1, endTime);
+                score = -negamax(board, newDepth, -alpha - 1, -alpha, ply + 1, endTime, false);
+                updatePv = false;
 
                 // Re-search only if score suggests move is better, and window is wide enough
                 if (score > alpha && score < beta) {
-                    score = -negamax(board, depth - 1 + extension, -beta, -alpha, ply + 1, endTime);
+                    score = -negamax(board, depth - 1 + extension, -beta, -alpha, ply + 1, endTime, true);
+                    updatePv = true;
                 }
             }
 
@@ -256,7 +277,7 @@ public class Searcher {
 
             if (score > alpha) {
                 alpha = score;
-                updatePrincipalVariation(ply, move);
+                if (updatePv) updatePrincipalVariation(ply, move);
             }
 
             // Beta cutoff
@@ -290,7 +311,7 @@ public class Searcher {
 
     private int quiescence(Board board, int alpha, int beta, int ply, long endTime) {
         // Avoid some overhead
-        if ((nodesSearched & 512) == 0 && System.currentTimeMillis() > endTime) {
+        if ((nodesSearched & 2048) == 0 && System.currentTimeMillis() > endTime) {
             timeIsUp = true;
             return 0;
         }
@@ -319,7 +340,7 @@ public class Searcher {
         MoveOrdering.orderMoves(captureCount, captures, 0, null, 0, null, board, ply);
 
         for (int i = 0; i < captureCount; i++) {
-            if ((nodesSearched & 512) == 0 && System.currentTimeMillis() > endTime) {
+            if ((nodesSearched & 2048) == 0 && System.currentTimeMillis() > endTime) {
                 timeIsUp = true;
                 return 0;
             }
@@ -355,40 +376,25 @@ public class Searcher {
     }
 
     private void updatePrincipalVariation(int ply, int move) {
-
-        // Add move at this ply
         pvTable[ply][0] = move;
-
-        // Append the rest of the moves from the next ply
-        int nextPlyPVLength = pvLength[ply + 1];
-        if (nextPlyPVLength >= 0) System.arraycopy(pvTable[ply + 1], 0, pvTable[ply], 1, nextPlyPVLength);
+        int nextPlyPVLength = (ply + 1 < pvLength.length) ? pvLength[ply + 1] : 0;
+        if (nextPlyPVLength > 0) {
+            System.arraycopy(pvTable[ply + 1], 0, pvTable[ply], 1, nextPlyPVLength);
+        }
         pvLength[ply] = nextPlyPVLength + 1;
     }
 
-    private List<Integer> getPrincipalVariation(Board board, int depth) {
-        List<Integer> PV = new ArrayList<>();
+    private List<Integer> getPrincipalVariation(int ply) {
+        int length = pvLength[ply];
+        List<Integer> pvMoves = new ArrayList<>(length);
 
-        // Walk through transposition table and append best moves
-        int counter = 0;
-        for (int i = 0; i < depth; i++) {
-            TTEntry ttEntry = transpositionTable.get(board.hashKey);
-            if (ttEntry == null || ttEntry.bestMove == 0) {
-                break;
-            }
-
-            int move = ttEntry.bestMove;
-            PV.add(move);
-            board.makeMove(move);
-            counter++;
+        for (int i = 0; i < length; i++) {
+            pvMoves.add(pvTable[ply][i]);
         }
 
-        // Reset board state
-        for (int i = 0; i < counter; i++) {
-            board.unmakeMove();
-        }
-
-        return PV;
+        return pvMoves;
     }
+
 
     private void clearPrincipalVariation() {
         for (int i = 0; i < pvTable.length; i++) {
