@@ -118,7 +118,7 @@ public class UciConnector {
         int finalDepth = depth;
         long finalMovetime = movetime;
         searchFuture = searchExecutor.submit(() -> {
-            engine.startSearch(finalDepth, finalMovetime / 25);
+            engine.startSearch(finalDepth, finalMovetime / 10);
             String best = engine.getMove();
             out.println("bestmove " + best);
         });

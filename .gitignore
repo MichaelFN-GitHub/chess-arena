@@ -42,3 +42,7 @@ Thumbs.db
 ### Maven ###
 /target/
 *.log
+
+MyEngineNew/
+MyEngineOld/
+src/main/resources/UHO_Lichess_4852_v1.epd
