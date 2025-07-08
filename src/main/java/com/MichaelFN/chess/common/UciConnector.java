@@ -19,10 +19,6 @@ public class UciConnector {
 
     private Engine engine;
 
-    public static void main(String[] args) throws IOException {
-        new UciConnector(new EngineV6()).loop();
-    }
-
     public UciConnector(Engine engine) {
         this.engine = engine;
     }
@@ -118,7 +114,7 @@ public class UciConnector {
         int finalDepth = depth;
         long finalMovetime = movetime;
         searchFuture = searchExecutor.submit(() -> {
-            engine.startSearch(finalDepth, finalMovetime / 10);
+            engine.startSearch(finalDepth, Math.min(1000, finalMovetime / 10));
             String best = engine.getMove();
             out.println("bestmove " + best);
         });

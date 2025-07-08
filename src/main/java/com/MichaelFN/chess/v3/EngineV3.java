@@ -1,8 +1,12 @@
 package com.MichaelFN.chess.v3;
 
+import com.MichaelFN.chess.common.UciConnector;
 import com.MichaelFN.chess.interfaces.NormalEvaluator;
 import com.MichaelFN.chess.v2.EngineV2;
 import com.MichaelFN.chess.v2.Negamax;
+import com.MichaelFN.chess.v6.EngineV6;
+
+import java.io.IOException;
 
 import static com.MichaelFN.chess.common.Constants.DEBUG_ENGINES;
 
@@ -20,5 +24,9 @@ public class EngineV3 extends EngineV2 {
     @Override
     public String getEngineName() {
         return "Positional Eval Engine (V3)";
+    }
+
+    public static void main(String[] args) throws IOException {
+        new UciConnector(new EngineV3()).loop();
     }
 }

@@ -1,5 +1,6 @@
 package com.MichaelFN.chess.v6;
 
+import com.MichaelFN.chess.v5.Constants;
 import com.MichaelFN.chess.v5.Utils;
 import com.MichaelFN.chess.v5.board.Board;
 import com.MichaelFN.chess.v5.move.Move;
@@ -91,6 +92,9 @@ public class Searcher {
             bestScore = score;
             bestMove = pvTable[0][0];
 
+            // Hack for not printing illegal moves when checkmate found
+            boolean forcedCheckmate = (Math.abs(bestScore) >= CHECKMATE_SCORE - MAX_PLY);
+
             if (DEBUG_SEARCH) {
                 long iterEndTime = System.currentTimeMillis();
                 long timeSpent = Math.max(iterEndTime - iterStartTime, 1);
@@ -105,9 +109,12 @@ public class Searcher {
                         " pv ");
                 List<Integer> pvMoves = getPrincipalVariation(0);
                 int count = Math.min(pvMoves.size(), depth);
+                if (forcedCheckmate) count--;
                 for (int i = 0; i < count; i++) System.out.print(Utils.moveToUci(pvMoves.get(i)) + " ");
                 System.out.println();
             }
+
+            if (forcedCheckmate) break;
         }
 
         if (DEBUG_SEARCH) {

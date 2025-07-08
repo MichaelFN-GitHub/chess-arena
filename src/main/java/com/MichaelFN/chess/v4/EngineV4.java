@@ -1,8 +1,12 @@
 package com.MichaelFN.chess.v4;
 
+import com.MichaelFN.chess.common.UciConnector;
 import com.MichaelFN.chess.interfaces.NormalEvaluator;
 import com.MichaelFN.chess.v2.Negamax;
 import com.MichaelFN.chess.v3.EngineV3;
+import com.MichaelFN.chess.v6.EngineV6;
+
+import java.io.IOException;
 
 import static com.MichaelFN.chess.common.Constants.DEBUG_ENGINES;
 
@@ -20,5 +24,9 @@ public class EngineV4 extends EngineV3 {
     @Override
     public String getEngineName() {
         return "Best Normal Engine (V4)";
+    }
+
+    public static void main(String[] args) throws IOException {
+        new UciConnector(new EngineV4()).loop();
     }
 }

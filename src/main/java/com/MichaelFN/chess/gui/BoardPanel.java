@@ -39,16 +39,11 @@ public class BoardPanel extends JPanel implements MouseListener, MouseMotionList
     private final Stack<String> moveHistory;
 
     public BoardPanel(BoardState boardState) {
-        this.boardState = boardState;
-        boardState.parseFEN("rnb1kbnr/ppp1pppp/8/4q3/8/2N5/PPPP1PPP/R1BQKBNR w KQkq - 2 4");
         this.pieceImages = new Image[2][6];
-        this.FEN = boardState.generateFenString();
+        this.boardState = boardState;
+        //boardState.parseFEN("rnb1kbnr/ppp1pppp/8/4q3/8/2N5/PPPP1PPP/R1BQKBNR w KQkq - 2 4");
         this.moveHistory = new Stack<>();
-        String moves = "g1e2 c7c5 d2d3 b8c6 c1f4 e5f5 f4e3 e7e5 c3e4 c5c4 e2g3 f5g6 d3c4 c8g4 f1e2 a8d8 e3d2 g4e2 d1e2 c6d4 e2d3 f7f5 e4g5 h7h6 g5f3 e5e4 d3d4 d8d4 f3d4 g8e7 e1g1 h6h5 h2h4 g6g4 d2g5 e4e3 g3e2 e3f2 f1f2 e7g6 d4f5 g4c4 e2d4 f8c5 b2b3 c4g8 a1e1 e8d7 c2c3 a7a5 e1e6 g8h7 e6e3 h8f8 a2a4 d7c8 f2f1 h7g8 c3c4 c8b8 e3e4 g8f7 g5e3 c5e7 d4e6 f8h8 f5g7 f7g8 g7f5 e7h4 f5h4 g6h4 f1f8 g8f8 e6f8 h4f3 g1f2 h8f8 g2f3 f8f5 e3b6 b8c8 e4d4 f5f8 b6a5 f8h8 d4d5 h5h4 d5c5 c8d7 c5c7 d7e6 c7b7 h4h3 b7b6 e6d7 b6b7 d7d6 a5b4 d6c6 b7b5 h3h2 b5c5 c6d7 c5d5 d7e6 d5d1 h2h1q d1h1 h8h1 b4d2 h1d1 f2e2 d1b1 b3b4 b1b2 b4b5 e6d6 a4a5 b2b3 a5a6 b3b2 e2d3 b2a2 d2e3 a2a3 d3e4 a3a4 a6a7 a4c4 e4f5 c4a4 b5b6 d6c6 e3d4 a4a3 f3f4 a3a2 f5e4 a2e2 d4e3 e2a2 f4f5 a2a1 f5f6 c6b7 f6f7 a1f1 e3f4 f1e1 e4f5 e1b1 f7f8q b1b5 f5g4 b5a5 f8b8 b7c6 b8c7 c6b5 b6b7 a5a6";
-        for (String m : moves.split(" ")) {
-            boardState.makeMove(Utils.uciToMove(m, boardState));
-            moveHistory.push(m);
-        }
+        this.FEN = boardState.generateFenString();
 
         loadPieceImages();
 

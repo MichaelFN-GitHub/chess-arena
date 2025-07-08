@@ -1,7 +1,10 @@
 package com.MichaelFN.chess.v1;
 
+import com.MichaelFN.chess.common.UciConnector;
 import com.MichaelFN.chess.interfaces.Engine;
+import com.MichaelFN.chess.v6.EngineV6;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Stack;
@@ -74,5 +77,9 @@ public class EngineV1 implements Engine {
     @Override
     public void printBoard() {
         System.out.println(boardState.toString());
+    }
+
+    public static void main(String[] args) throws IOException {
+        new UciConnector(new EngineV1()).loop();
     }
 }

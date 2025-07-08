@@ -1,8 +1,11 @@
 package com.MichaelFN.chess.v6;
 
+import com.MichaelFN.chess.common.UciConnector;
 import com.MichaelFN.chess.v5.Constants;
 import com.MichaelFN.chess.v5.EngineV5;
 import com.MichaelFN.chess.v5.search.Evaluator;
+
+import java.io.IOException;
 
 import static com.MichaelFN.chess.common.Constants.DEBUG_ENGINES;
 
@@ -30,5 +33,9 @@ public class EngineV6 extends EngineV5 {
     @Override
     public String getEngineName() {
         return "Faster Bitboard Engine (V6)";
+    }
+
+    public static void main(String[] args) throws IOException {
+        new UciConnector(new EngineV6()).loop();
     }
 }

@@ -1,10 +1,13 @@
 package com.MichaelFN.chess.v5;
 
+import com.MichaelFN.chess.common.UciConnector;
 import com.MichaelFN.chess.interfaces.Engine;
 import com.MichaelFN.chess.v5.board.Board;
 import com.MichaelFN.chess.v5.search.Evaluator;
 import com.MichaelFN.chess.v5.search.Searcher;
+import com.MichaelFN.chess.v6.EngineV6;
 
+import java.io.IOException;
 import java.util.Stack;
 
 import static com.MichaelFN.chess.common.Constants.DEBUG_ENGINES;
@@ -70,5 +73,9 @@ public class EngineV5 implements Engine {
     @Override
     public void printBoard() {
         System.out.println(board.toString());
+    }
+
+    public static void main(String[] args) throws IOException {
+        new UciConnector(new EngineV5()).loop();
     }
 }

@@ -1,5 +1,6 @@
 package com.MichaelFN.chess.v5.search;
 
+import com.MichaelFN.chess.v5.Constants;
 import com.MichaelFN.chess.v5.Utils;
 import com.MichaelFN.chess.v5.move.Move;
 import com.MichaelFN.chess.v5.move.MoveGenerator;
