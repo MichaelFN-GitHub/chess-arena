@@ -7,7 +7,7 @@ This project was built iteratively with the goal of improving AI playing strengt
 
 ---
 
-## 🧠 Features
+## Features
 
 - Fully playable chess game
 - Multiple AI versions based on search algorithms
